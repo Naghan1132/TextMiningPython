@@ -1,0 +1,3 @@
+# python V : python 3.10
+
+requirements : dash, xmltodic, praw
