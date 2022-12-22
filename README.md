@@ -1,5 +1,5 @@
 # Authors 
-Nathan Grimault
+Nathan Grimault Léo Gondouin
 # TextMiningPython
-Projet de Text Mining en Python, M1 Informatique Lyon 2
+Projet de Text Mining en Python, M1 Informatique Université Lyon 2
 
