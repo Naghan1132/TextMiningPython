@@ -1,3 +1,9 @@
+dfSpaceReddit = corpusTP4.get_id2doc_DF()    
+listeAuteurReddit = dfSpaceReddit['Auteur'].unique()
+
+dfSpaceArxiv = corpusTP4_2.get_id2doc_DF()    
+listeAuteurArxiv = dfSpaceArxiv['Auteur'].unique()
+
 from dash import Dash, dash_table,dcc,Input
 from dash import html
 import pandas as pd
