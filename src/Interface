@@ -1,0 +1,87 @@
+from dash import Dash, dash_table,dcc,Input
+from dash import html
+import pandas as pd
+from dash.dependencies import Input, Output,State
+
+app = Dash(__name__)
+from dash import html
+    
+app.layout = html.Div([
+html.Div([
+dcc.Input(type='text',placeholder='Saisir les mots clés...',style={'margin':'0 auto','display':'block','bottom':'100px'}),
+dcc.Dropdown(listeAuteurReddit,id='cbAuteurLeft',style={'width':'100px'}),
+dcc.Dropdown(listeAuteurArxiv,id='cbAuteurRight',style={'width':'100px'}),
+dcc.DatePickerRange(
+id='datepicker',
+min_date_allowed=datetime.date(1995, 8, 5),
+max_date_allowed=datetime.date(2017, 9, 19),
+initial_visible_month=datetime.date(2017, 8, 5),
+end_date=datetime.date(2017, 8, 25)
+),
+html.Button('Filtrer', id='btnFilterLeft', n_clicks=None),
+html.Button('Filtrer', id='btnFilterRight', n_clicks=None),
+],id="divSearch", style={'float':'top','width':'100%','height':'10%','border-style':'solid'}),
+html.Div([
+dash_table.DataTable(
+id='tableReddit',
+data=dfSpaceReddit.to_dict('records'),     #the contents of the table
+columns=[
+    {'id': 'Id', 'name': 'ID'},
+    {'id': 'Nom', 'name': 'Titre'},
+    {'id': 'Auteur', 'name': 'Auteur'},
+    {'id': 'Date', 'name': 'Date'},
+    {'id': 'URL', 'name': 'URL'},
+    {'id': 'Text', 'name': 'Texte'},
+])],id="divLeft",style={'z-index':'0','float':'left','width':'49.5%','height':'90%'}),
+html.Div(style={'z-index':'1','float':'left','width':'49.5%','height':'90%'},id='divDetailsLeft'),
+html.Div([
+dash_table.DataTable(
+id='tableArxiv',
+data=dfSpaceArxiv.to_dict('records'),     #the contents of the table
+columns=[
+    {'id': 'Id', 'name': 'ID'},
+    {'id': 'Nom', 'name': 'Titre'},
+    {'id': 'Auteur', 'name': 'Auteur'},
+    {'id': 'Date', 'name': 'Date'},
+    {'id': 'URL', 'name': 'URL'},
+    {'id': 'Text', 'name': 'Texte'},
+])],id="divRight",style={'z-index':'1','float':'right','width':'49.5%','height':'90%'})])
+@app.callback(
+    Output('tableReddit', 'data'),
+    State('cbAuteurLeft', 'value'),
+    Input('btnFilterLeft', 'n_clicks'),
+)
+def callback_func(cbAuteur_value,clicks,active_cell):
+    df_filtered = dfSpaceReddit.copy()
+    
+    if cbAuteur_value:
+        df_filtered = dfSpaceReddit[dfSpaceReddit['Auteur'].eq(cbAuteur_value)]
+    return df_filtered.to_dict(orient='records')
+
+
+@app.callback(
+    Output('tableArxiv', 'data'),
+    State('cbAuteurRight', 'value'),
+    Input('btnFilterRight', 'n_clicks')
+)
+def callback_func_2(cbAuteur_value,clicks):
+    df_filtered = dfSpaceArxiv.copy()
+    
+    if cbAuteur_value:
+        df_filtered = dfSpaceArxiv[dfSpaceArxiv['Auteur'].eq(cbAuteur_value)]
+    return df_filtered.to_dict(orient='records')
+
+@app.callback(
+    Output("divDetailsLeft", "style"),
+    Input('tableReddit', 'active_cell'),
+    State('tableReddit', 'data')
+)
+def callback_func_3(active_cell,data):
+    if active_cell:
+        row = active_cell['row']
+        print(data[row]['Id'])
+        return {'z-index':'1','float':'left','width':'49.5%','height':'90%','display':'block','background-color':'red'}
+    
+
+if __name__ == '__main__':
+    app.run_server()
