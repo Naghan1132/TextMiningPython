@@ -1,5 +1,5 @@
 #from Document import ArxivDocument
-from Document import *
+from src.Document import *
 
 class DocumentGenerator: # OK
 

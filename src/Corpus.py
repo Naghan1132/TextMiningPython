@@ -220,7 +220,8 @@ class Corpus:
                     nbOccurence = truc.count(i)
                     deja_vu.append(i)
                     data.append(nbOccurence)
-        mat_TF = csr_matrix(data,(rows,cols),shape=(len(rows),len(cols))).toarray()
+        #mat_TF = csr_matrix(data,(rows,cols),shape=(len(rows),len(cols))).toarray()
+        mat_TF = csr_matrix(data,(rows,cols)).toarray()
 
         return mat_TF
         #mat_TFxIDF = csr_matrix((data,(rows,cols))).toarray()

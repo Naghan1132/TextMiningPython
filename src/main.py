@@ -7,15 +7,15 @@ from importlib import reload
 #from IPython.core.display import display
 
 #import Document
-import Corpus
-import Author
-import DocumentGenerator
+import src.Corpus
+import src.Author
+import src.DocumentGenerator
 
 #Pour tp4
 #reload(Document)
-reload(Author)
-reload(Corpus)
-reload(DocumentGenerator)
+reload(src.Author)
+reload(src.Corpus)
+reload(src.DocumentGenerator)
 
 # PARTIE 1 :
 
@@ -25,7 +25,7 @@ id2doc = {}
 id2aut = {}
 docs = []
 
-corpusTP4 = Corpus.Corpus("Space",id2aut,id2doc)
+corpusTP4 = src.Corpus.Corpus("Space",id2aut,id2doc)
 #print(corpusTP4)
 
 indice = 1
@@ -39,13 +39,13 @@ for post in hot_posts:
         #si c'est une image ou un lien dans le texte et pas une discussion etc... :
         docs.append([len(docs),post.title+" "+post.url,'reddit',post.url])
         #document = Document.Document(post.title,post.author.name,post.url,post.url,dateTime)
-        document = DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)#tp5
+        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)#tp5
         corpusTP4.addDoc(document)
     else:
         post.selftext.replace("\r\n", " ")
         docs.append([len(docs),post.selftext,'reddit',post.url])
         #document = Document.Document(post.title,post.author.name,post.url,post.selftext,dateTime)
-        document = DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime) #tp5
+        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime) #tp5
         corpusTP4.addDoc(document)
 
     id2doc[indice] = document
@@ -64,7 +64,7 @@ for post in hot_posts:
         i.add(document)
     else:
         production = {}
-        auteur = Author.Author(post.author.name,0,production)
+        auteur = src.Author.Author(post.author.name,0,production)
         auteur.add(document)
         id2aut[post.author.name] = auteur
 
@@ -96,7 +96,7 @@ for values in dic['feed']['entry']:
         for a in nomAuteur.values():
             #Un seul auteur
             #document = Document.ArxivDocument(values.get('title'),a,url,resumer,trucDate)
-            document = DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,trucDate) #tp5*
+            document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,trucDate) #tp5*
             listeA = []
             listeA.append(a)
             document.setListeAutheurs(listeA)
@@ -108,7 +108,7 @@ for values in dic['feed']['entry']:
                 i.add(document)
             else:
                 production = {}
-                auteur = Author.Author(a,0,production)
+                auteur = src.Author.Author(a,0,production)
                 auteur.add(document)
                 id2aut[a] = auteur
     else:
@@ -120,7 +120,7 @@ for values in dic['feed']['entry']:
                 #plusieurs autheurs alors on ajoute plusieurs fois le doc
         #document = Document.ArxivDocument(values.get('title'),listeAuteur,url,resumer,trucDate) #
         #Mettre le premier auteur dans l'auteur de base => puis on rajoute
-        document = DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,trucDate) #tp5
+        document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,trucDate) #tp5
         document.setListeAutheurs(listeAuteur)
         corpusTP4.addDoc(document)
         id2doc[indice] = document
@@ -131,7 +131,7 @@ for values in dic['feed']['entry']:
                 i.add(document)
             else:
                 production = {}
-                auteur = Author.Author(nomAuteur,0,production)
+                auteur = src.Author.Author(nomAuteur,0,production)
                 auteur.add(document)
                 id2aut[nomAuteur] = auteur
 
