@@ -163,16 +163,9 @@ class Corpus:
                 id += 1
         self.vocab = vocabulaire
 
-    def nettoyer_texte2(self,chaine):
-        chaine = chaine.lower() # mets tout en minuscule
-        chaine = chaine.replace("\r\n"," ") # remplace le saut de ligne par une chaine vide
-        chaine = re.sub(r'\b\w*\d+\w*\b', '', chaine) # enlève tous mots qui contiennent des chiffres
-        chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
-        chaine = re.sub(r'[^\w\s]', ' ',chaine) # remplace la ponctuaction par des espaces => A CAUSE DE ÇA QUE ÇA CONCATENE
-        chaine = re.sub(r'\b\w*[^\w\s]\w*|\b\w*\d+\w*\b', '', chaine) # remove_words_with_non_letters
-        return chaine
-
     def nettoyer_texte(self,chaine): # test avec le tp3 Ingénierie des Données
+        # remove links
+        chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
         chaine.split()
         # tokenize
         tokens = word_tokenize(chaine)
@@ -185,7 +178,7 @@ class Corpus:
         # remove remainning token that are not alphabetic
         words = [word for word in stripped if word.isalpha()]
         #filter out stop words
-        stop_words = set(stopwords.words('english')) # IMPORTANT
+        stop_words = set(stopwords.words('english'))
         words = [w for w in words if not w in stop_words]
         # filter token with 1 char
         words = [w for w in words if len(w)>1]
@@ -231,7 +224,7 @@ class Corpus:
                         data.append(nbOccurence)
                         self.vocab[word]['document frequency'] += 1
 
-        print(testDict) # OK
+        #print(testDict) # OK
         df = pd.DataFrame(testDict)
         #display(df)
         df.to_csv("testDF.csv", sep='\t',encoding='utf-8')
@@ -244,7 +237,8 @@ class Corpus:
 
 
         #print(data)
-        #mat_TF = csr_matrix(data)
+        #mat_TF = csr_matrix(testDict)
+        #print(mat_TF)
         #return mat_TF
         #mat_TF_IDF = csr_matrix((data,(rows,cols))).toarray()
         #row = np.array([0, 1, 2, 0])

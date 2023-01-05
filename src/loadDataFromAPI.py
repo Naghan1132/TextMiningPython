@@ -80,7 +80,7 @@ for values in dic['feed']['entry']:
         for a in nomAuteur.values():
             #Un seul auteur
             #document = Document.ArxivDocument(values.get('title'),a,url,resumer,trucDate)
-            document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,trucDate) #tp5*
+            document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,trucDate)
             listeA = []
             listeA.append(a)
             document.setListeAutheurs(listeA)
