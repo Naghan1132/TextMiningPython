@@ -17,6 +17,5 @@ corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
 
 #print(corpus.search("algebra"))
 #print(corpus.concorde("algebra",5))
-#print(corpus.stats(10))
-#print(corpus.stats())
 print(corpus.matrice())
+print(corpus.stats(10))

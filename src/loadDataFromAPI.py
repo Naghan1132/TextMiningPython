@@ -19,14 +19,10 @@ id2doc = {}
 id2aut = {}
 docs = []
 
-testAllDoc = []
-
-corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
-#print(corpus)
-
 indice = 1
 
-#get 10 hot posts from the MachineLearning subreddit
+#get 10 hot posts from the Space subreddit
+
 hot_posts = reddit.subreddit('space').hot(limit=5)
 for post in hot_posts:
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
@@ -34,17 +30,11 @@ for post in hot_posts:
     if post.selftext == "":
         #si c'est une image ou un lien dans le texte et pas une discussion etc... :
         docs.append([len(docs),post.title+" "+post.url,'reddit',post.url])
-        #document = Document.Document(post.title,post.author.name,post.url,post.url,dateTime)
-        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)#tp5
-        testAllDoc.append(document)
-        corpus.addDoc(document)
+        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)
     else:
         post.selftext.replace("\r\n", " ")
         docs.append([len(docs),post.selftext,'reddit',post.url])
-        #document = Document.Document(post.title,post.author.name,post.url,post.selftext,dateTime)
-        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime) #tp5
-        corpus.addDoc(document)
-        testAllDoc.append(document)
+        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
     id2doc[indice] = document
     indice += 1
@@ -94,7 +84,6 @@ for values in dic['feed']['entry']:
             listeA = []
             listeA.append(a)
             document.setListeAutheurs(listeA)
-            corpus.addDoc(document)
             id2doc[indice] = document
             indice += 1
             i = id2aut.get(a)
@@ -116,7 +105,6 @@ for values in dic['feed']['entry']:
         #Mettre le premier auteur dans l'auteur de base => puis on rajoute
         document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,trucDate) #tp5
         document.setListeAutheurs(listeAuteur)
-        corpus.addDoc(document)
         id2doc[indice] = document
         indice += 1
         for nomAuteur in listeAuteur:
