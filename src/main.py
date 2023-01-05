@@ -25,8 +25,8 @@ id2doc = {}
 id2aut = {}
 docs = []
 
-corpusTP4 = src.Corpus.Corpus("Space",id2aut,id2doc)
-#print(corpusTP4)
+corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
+#print(corpus)
 
 indice = 1
 
@@ -40,13 +40,13 @@ for post in hot_posts:
         docs.append([len(docs),post.title+" "+post.url,'reddit',post.url])
         #document = Document.Document(post.title,post.author.name,post.url,post.url,dateTime)
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)#tp5
-        corpusTP4.addDoc(document)
+        corpus.addDoc(document)
     else:
         post.selftext.replace("\r\n", " ")
         docs.append([len(docs),post.selftext,'reddit',post.url])
         #document = Document.Document(post.title,post.author.name,post.url,post.selftext,dateTime)
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime) #tp5
-        corpusTP4.addDoc(document)
+        corpus.addDoc(document)
 
     id2doc[indice] = document
     indice += 1
@@ -100,7 +100,7 @@ for values in dic['feed']['entry']:
             listeA = []
             listeA.append(a)
             document.setListeAutheurs(listeA)
-            corpusTP4.addDoc(document)
+            corpus.addDoc(document)
             id2doc[indice] = document
             indice += 1
             i = id2aut.get(a)
@@ -122,7 +122,7 @@ for values in dic['feed']['entry']:
         #Mettre le premier auteur dans l'auteur de base => puis on rajoute
         document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,trucDate) #tp5
         document.setListeAutheurs(listeAuteur)
-        corpusTP4.addDoc(document)
+        corpus.addDoc(document)
         id2doc[indice] = document
         indice += 1
         for nomAuteur in listeAuteur:
@@ -200,33 +200,30 @@ for values in dic['feed']['entry']:
 
 
 
-#truc = corpusTP4.load("testTP4")
+#truc = corpus.load("testTP4")
 #print(truc)
 
-#for i,j in corpusTP4.trieDate(5).items():
+#for i,j in corpus.trieDate(5).items():
 #   print(j.date)
 
-#for i,j in corpusTP4.trieTitre(5).items():
+#for i,j in corpus.trieTitre(5).items():
 #   print(j.titre)
-corpusTP4.setAuteurs(id2aut)
+corpus.setAuteurs(id2aut)
 
-#corpusTP4.save("testTP4")
+#corpus.save("testTP4")
 
-
-
-
-#for i in corpusTP4.trieTitre(7).values(): # OK
+#for i in corpus.trieTitre(7).values(): # OK
     #print(i.getType())
     #print(i) #BUG
 
-#print(corpusTP4.search("algebra"))
-#print(corpusTP4.concorde("algebra",5))
 
-#print(corpusTP4.stats())
+# =============== 2.9 : SAUVEGARDE ===============
+import pickle
 
-corpusTP4.buildVocab()
-print(corpusTP4.stats())
-print(corpusTP4.matrice())
+# Ouverture d'un fichier, puis écriture avec pickle
+with open("corpus.pkl", "wb") as f:
+    pickle.dump(corpus, f)
+
 
 
 #[for v in corpus.get_coll().values()]:
