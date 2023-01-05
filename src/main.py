@@ -225,6 +225,7 @@ corpusTP4.setAuteurs(id2aut)
 #print(corpusTP4.stats())
 
 corpusTP4.buildVocab()
+print(corpusTP4.stats())
 print(corpusTP4.matrice())
 
 

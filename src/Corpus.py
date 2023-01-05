@@ -147,9 +147,8 @@ class Corpus:
         if self.chaineUnique == "":
             self.buildChaineUnique()
         chaine = self.nettoyer_texte(self.chaineUnique)
-        #print("chaine unique vocab (après nettoyage) : ",chaine)
         mots = re.split(r'\s+', chaine) # split la liste avec espaces
-        setVoca = sorted(set(mots)) # élimine les doublons et range par ordre alpha
+        setVoca = sorted(set(mots)) # élimine les doublons et range par ordre alphabétique
         print("taille du vocabulaire : ",len(setVoca))
         print(setVoca)
         vocabulaire = {}
@@ -161,29 +160,26 @@ class Corpus:
         self.vocab = vocabulaire
 
     def nettoyer_texte(self,chaine):
-        chaine.lower() # mets tout en minuscule
-        chaine.replace("\r\n","") # remplace le saut de ligne par une chaine vide
+        chaine = chaine.lower() # mets tout en minuscule
+        chaine = chaine.replace("\r\n","") # remplace le saut de ligne par une chaine vide
         chaine = re.sub(r'[^\w\s]', '',chaine) # remplace la ponctuaction par des espaces
-        #chaine = re.sub(r'\b\w*[^\w\s]\w*\b', '', chaine) # enlève les mots qui contiennent de la ponctuation (ex : A_n)
         chaine = re.sub(r'\b\w*\d+\w*\b', '', chaine) # enlève tous mots qui contiennent des chiffres
         chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
-        # enlever https, www, tout les mots qui contiennent des chiffres (x3889, A_1) etc...
         return chaine
 
     def stats(self): # OK
         for doc in self.id2doc.values():
-            txt = doc.getText()
-            chaine = self.nettoyer_texte(txt)
-            truc = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
+            text = doc.getText()
+            cleanedChaine = self.nettoyer_texte(text)
+            splitedWords = re.split(r"[\b\W\b]+",cleanedChaine) # split la liste avec espaces, ponctuation etc...
             listeDejaVu = []
-            for i in truc:
-                if i in self.vocab.keys(): # si il est dans le vocabulaire alors on ajoute
-                    self.vocab[i]['term frequency'] += 1
-                    if i not in listeDejaVu:
-                        self.vocab[i]['document frequency'] += 1
-                        listeDejaVu.append(i)
+            for word in splitedWords:
+                if word in self.vocab.keys(): # combien de fois le mot apparait en tout 
+                    self.vocab[word]['term frequency'] += 1
+                    if word not in listeDejaVu: # dans combien de document apparait le mot
+                        self.vocab[word]['document frequency'] += 1
+                        listeDejaVu.append(word)
 
-        print(self.vocab)
         df = pd.DataFrame(self.vocab)
         df = df.T # transpose = inverser rows et col
         display(df)
@@ -204,20 +200,21 @@ class Corpus:
             splitedWords = re.split(r"[\b\W\b]+",chaineCleaned) # split la liste avec espaces, ponctuation etc...
             deja_vu = []
 
-            for v in self.vocab.keys(): #initialise a 0
-                testDict[doc.getTitre()][v] = 0
+            for mot in self.vocab.keys(): #initialise a 0
+                testDict[doc.getTitre()][mot] = 0
 
             for mot in splitedWords:
                 if mot in self.vocab.keys() and mot not in deja_vu: # si il est dans le vocabulaire alors on ajoute
                     nbOccurence = splitedWords.count(mot) # on compte directement tout les mêmes mots d'un texte
-                    testDict[doc.getTitre()][v] = nbOccurence
+                    testDict[doc.getTitre()][mot] = nbOccurence
                     deja_vu.append(mot)
                     data.append(nbOccurence)
 
 
         #print(testDict) # OK
         df = pd.DataFrame(testDict)
-        display(df)
+        #display(df)
+        df.to_csv("testDF.csv", sep='\t',encoding='utf-8')
 
         #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
         #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
