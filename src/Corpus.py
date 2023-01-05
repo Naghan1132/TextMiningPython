@@ -3,9 +3,8 @@ import re
 from scipy.sparse import csr_matrix
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
 import string
+import math
 
 # Un singleton est un patron de conception qui permet
 # de s'assurer qu'une classe ne dispose que d'une et une seule instance.
@@ -203,31 +202,78 @@ class Corpus:
         cols = [] # mot (j)
         data = [] # à l'intersection (i,j) on place le nb d'occurence du mot dans le document
 
-        testDict = {}
+        dictTF = {}
+
         for doc in self.id2doc.values():
             rows.append(doc.getTitre())
-            testDict[doc.getTitre()] = {}
+            dictTF[doc.getTitre()] = {}
+
             docText = doc.getText()
             chaineCleaned = self.nettoyer_texte(docText)
-            splitedWords = re.split('\s+', chaineCleaned) # split la liste avec espaces, ponctuation etc...
+            splitedWords = re.split('\s+', chaineCleaned) # split la liste avec espaces
 
             deja_vu = []
 
             for word in splitedWords:
-                testDict[doc.getTitre()][word] = 0 # initialisation (bug)
+                dictTF[doc.getTitre()][word] = 0 # initialisation (bug)
                 if word in self.vocab.keys(): # il est dans le vocabulaire
                     self.vocab[word]['term frequency'] += 1
                     if word not in deja_vu: # première fois que l'on tombe dessus dans le document
                         nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        testDict[doc.getTitre()][word] = nbOccurence
+                        dictTF[doc.getTitre()][word] = nbOccurence
                         deja_vu.append(word)
                         data.append(nbOccurence)
                         self.vocab[word]['document frequency'] += 1
 
-        #print(testDict) # OK
-        df = pd.DataFrame(testDict)
+        # ==== TF_IDF === :
+        # dictionnaire qui contiendra les mots de chaque document et leur fréquence
+        tf_scores = {}
+
+        # calcul de la fréquence de chaque mot dans chaque document
+        for doc in self.id2doc.values():
+            chaineCleaned = self.nettoyer_texte(doc.getText())
+            splitedWords = chaineCleaned.split() # split la liste avec espaces
+            for word in splitedWords:
+                if word in tf_scores:
+                    tf_scores[word]['doc_count'] += 1
+                else:
+                    tf_scores[word] = {'doc_count': 1}
+
+        # calcul de la fréquence de chaque mot dans tous les documents
+        for word, scores in tf_scores.items():
+            # tout les mots qui ne sont pas dans le
+            # mettre à 0 les mots qui manquent au vocabulaire
+            tf_scores[word]['total_count'] = sum(1 for doc in self.id2doc.values() if word in doc.getText())
+
+
+        # dictionnaire qui contiendra les mots et leur score idf
+        idf_scores = {}
+
+        # calcul du score idf pour chaque mot
+        for word, scores in tf_scores.items():
+            #print(scores['total_count'])
+            if scores['total_count'] == 0:
+                idf_scores[word] = 0
+            else:
+                idf_scores[word] = math.log(len(self.id2doc) / scores['total_count'])
+
+        # création de la matrice tf-idf
+        mat_TFxIDF = []
+        for doc in self.id2doc.values():
+            doc_tfidf = []
+            chaineCleaned = self.nettoyer_texte(doc.getText())
+            splitedWords = chaineCleaned.split() # split la liste avec espaces
+            for word in splitedWords:
+                tf = tf_scores[word]['doc_count'] / len(splitedWords)
+                idf = idf_scores[word]
+                doc_tfidf.append(tf * idf)
+            mat_TFxIDF.append(doc_tfidf)
+
+        print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
+
+        df = pd.DataFrame(dictTF)
         #display(df)
-        df.to_csv("testDF.csv", sep='\t',encoding='utf-8')
+        df.to_csv("TF.csv", sep='\t',encoding='utf-8')
 
         #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
         #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
