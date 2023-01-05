@@ -2,7 +2,7 @@ class Author:
     def __init__(self,name,ndoc,production):
         self.name = name
         self.ndoc = ndoc
-        self.production = production #dictionnaire de doc écrits par l'auteur
+        self.production = production # dictionnaire de doc écrits par l'auteur
 
     def nbDoc(self):
         return self.nbDoc

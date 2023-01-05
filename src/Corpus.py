@@ -1,6 +1,11 @@
 import pandas as pd
 import re
 from scipy.sparse import csr_matrix
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
+import string
 
 # Un singleton est un patron de conception qui permet
 # de s'assurer qu'une classe ne dispose que d'une et une seule instance.
@@ -33,7 +38,8 @@ class Corpus:
         else:
             indice = max(list(self.id2doc.keys())) + 1
         self.id2doc[indice] = document
-
+    def setAuteurs(self,dicAuteurs):
+        self.authors = dicAuteurs
     def trieDate(self,nombreDocVoulu):
         listeDate = []
         #listeDate.sort(reverse=True)
@@ -78,9 +84,6 @@ class Corpus:
         with open(nom+".csv", "r") as f:
             corpus = pd.read_csv(f, sep="\t")
         #return corpus
-
-    def setAuteurs(self,dicAuteurs):
-        self.authors = dicAuteurs
 
     def __repr__(self):
         pass
@@ -161,13 +164,49 @@ class Corpus:
 
     def nettoyer_texte(self,chaine):
         chaine = chaine.lower() # mets tout en minuscule
-        chaine = chaine.replace("\r\n","") # remplace le saut de ligne par une chaine vide
-        chaine = re.sub(r'[^\w\s]', '',chaine) # remplace la ponctuaction par des espaces
+        chaine = chaine.replace("\r\n"," ") # remplace le saut de ligne par une chaine vide
         chaine = re.sub(r'\b\w*\d+\w*\b', '', chaine) # enlève tous mots qui contiennent des chiffres
         chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
-        return chaine
+        chaine = re.sub(r'[^\w\s]', ' ',chaine) # remplace la ponctuaction par des espaces => A CAUSE DE ÇA QUE ÇA CONCATENE
+        # test
+        chaine = re.sub(r'\b\w*[^\w\s]\w*|\b\w*\d+\w*\b', '', chaine) # remove_words_with_non_letters
 
-    def stats(self): # OK
+        #stop_words = set(stopwords.words('english')) # IMPORTANT
+        #words = [w for w in words if not w in stop_words]
+        # filter token with 1 char
+        #words = [w for w in words if len(w)>1]
+        #cleaned_doc = ' '.join(word for word in stemmed) # pour faire un paragraph entier (concatene les mots)
+
+        #bug aussi du underscore => peut-être pas compté dans la punctuation => préciser à chat gpt
+        return chaine
+    def nettoyer_texte2(self,chaine): # test avec le tp3 Ingénierie des Données
+        # enlever le stemmer peut-être ?
+        chaine.split()
+        # tokenize
+        tokens = word_tokenize(chaine)
+        #convert in lower case
+        tokens = [w.lower() for w in tokens]
+        #prepare regex for char filtering
+        re_punc = re.compile('[%s]' % re.escape(string.punctuation))
+        # remove punctuation from each word
+        stripped = [re_punc.sub('',w) for w in tokens]
+        # remove remainning token that are not alphabetic
+        words = [word for word in stripped if word.isalpha()]
+        #filter out stop words
+        stop_words = set(stopwords.words('english')) # IMPORTANT
+        words = [w for w in words if not w in stop_words]
+        # filter token with 1 char
+        words = [w for w in words if len(w)>1]
+
+        cleaned_doc = ' '.join(word for word in words) # pour faire un paragraph entier (concatene les mots)
+        return cleaned_doc
+
+    def stats(self,n): # OK
+        # PAS VRAIMENT ÇA, A FAIRE DANS LA FONCTION matrice()
+        # elle doit afficher : Le nombre de mots diff ́erents dans le corpus
+        # et : Afficher les n mots les plus fréquents (n est un paramètre)
+        print("Nombre de mots différents dans le corpus : ",len(self.vocab))
+
         for doc in self.id2doc.values():
             text = doc.getText()
             cleanedChaine = self.nettoyer_texte(text)
@@ -200,17 +239,17 @@ class Corpus:
             splitedWords = re.split(r"[\b\W\b]+",chaineCleaned) # split la liste avec espaces, ponctuation etc...
             deja_vu = []
 
-            for mot in self.vocab.keys(): #initialise a 0
-                testDict[doc.getTitre()][mot] = 0
+            for word in splitedWords:
+                if word in self.vocab.keys(): # il est dans le vocabulaire
+                    self.vocab[word]['term frequency'] += 1
+                    if word not in deja_vu: # première fois que l'on tombe dessus dans le document
+                        nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
+                        testDict[doc.getTitre()][word] = nbOccurence
+                        deja_vu.append(word)
+                        data.append(nbOccurence)
+                        self.vocab[word]['document frequency'] += 1
 
-            for mot in splitedWords:
-                if mot in self.vocab.keys() and mot not in deja_vu: # si il est dans le vocabulaire alors on ajoute
-                    nbOccurence = splitedWords.count(mot) # on compte directement tout les mêmes mots d'un texte
-                    testDict[doc.getTitre()][mot] = nbOccurence
-                    deja_vu.append(mot)
-                    data.append(nbOccurence)
-
-
+        print(self.vocab)
         #print(testDict) # OK
         df = pd.DataFrame(testDict)
         #display(df)
