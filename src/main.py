@@ -5,11 +5,11 @@ from importlib import reload
 reload(src.Corpus)
 
 # Ouverture du fichier, puis lecture avec pickle
-with open("id2doc.pkl", "rb") as f:
+with open("../test_data/id2doc.pkl", "rb") as f:
     id2doc = pickle.load(f)
 
 # Ouverture du fichier, puis lecture avec pickle
-with open("id2aut.pkl", "rb") as f:
+with open("../test_data/id2aut.pkl", "rb") as f:
     id2aut = pickle.load(f)
 
 

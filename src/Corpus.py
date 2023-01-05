@@ -193,8 +193,6 @@ class Corpus:
         return cleaned_doc
 
     def stats(self,n): # OK
-        # elle doit afficher : Le nombre de mots diff ́erents dans le corpus
-        # et : Afficher les n mots les plus fréquents (n est un paramètre)
         print("Nombre de mots différents dans le corpus : ",len(self.vocab))
         trie = sorted(self.vocab.items(), key=lambda x: x[1]['term frequency'], reverse=True)
         for i in range(n):

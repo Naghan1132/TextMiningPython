@@ -145,11 +145,11 @@ for values in dic['feed']['entry']:
 # =============== SAUVEGARDE DES DONNÉES REDIT/ARXIV ===============
 import pickle
 
-with open("id2doc.pkl", "wb") as f:
+with open("../test_data/id2doc.pkl", "wb") as f:
     pickle.dump(id2doc, f)
 
 # Ouverture d'un fichier, puis écriture avec pickle
-with open("id2aut.pkl", "wb") as f:
+with open("../test_data/id2aut.pkl", "wb") as f:
     pickle.dump(id2aut, f)
 
 print("FINI DE CHARGER LES DONNÉES")
