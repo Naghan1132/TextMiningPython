@@ -12,13 +12,8 @@ with open("id2doc.pkl", "rb") as f:
 with open("id2aut.pkl", "rb") as f:
     id2aut = pickle.load(f)
 
-#print(id2doc)
-#print("\n")
-#print(id2aut)
 
 corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
-
-corpus.buildVocab()
 
 #print(corpus.search("algebra"))
 #print(corpus.concorde("algebra",5))

@@ -31,6 +31,7 @@ class Corpus:
         self.ndoc = len(id2doc) #nb document
         self.chaineUnique = ""
         self.vocab = {}
+        self.buildVocab()
 
     def addDoc(self,document):
         if len(self.id2doc.keys()) == 0:
