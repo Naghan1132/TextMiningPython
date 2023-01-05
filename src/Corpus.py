@@ -174,7 +174,7 @@ class Corpus:
             splitedWords = re.split(r"[\b\W\b]+",cleanedChaine) # split la liste avec espaces, ponctuation etc...
             listeDejaVu = []
             for word in splitedWords:
-                if word in self.vocab.keys(): # combien de fois le mot apparait en tout 
+                if word in self.vocab.keys(): # combien de fois le mot apparait en tout
                     self.vocab[word]['term frequency'] += 1
                     if word not in listeDejaVu: # dans combien de document apparait le mot
                         self.vocab[word]['document frequency'] += 1
