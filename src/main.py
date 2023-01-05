@@ -222,8 +222,9 @@ corpusTP4.setAuteurs(id2aut)
 #print(corpusTP4.search("algebra"))
 #print(corpusTP4.concorde("algebra",5))
 
-print(corpusTP4.stats())
+#print(corpusTP4.stats())
 
+corpusTP4.buildVocab()
 print(corpusTP4.matrice())
 
 

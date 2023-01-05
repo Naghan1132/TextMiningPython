@@ -85,14 +85,17 @@ class Corpus:
     def __repr__(self):
         pass
 
+    def buildChaineUnique(self):
+        liste = []
+        for i in self.id2doc.values():
+            txt = i.getText().replace("\n", " ")
+            liste.append(txt)
+        self.chaineUnique = " ".join(liste) # OK
+
     def search(self,mot):
         #retourne les passages des documents contenant le mot-clef entré en paramétre
         if self.chaineUnique == "":
-            liste = []
-            for i in self.id2doc.values():
-                txt = i.getText().replace("\n", " ")
-                liste.append(txt)
-            self.chaineUnique = " ".join(liste) # OK
+            self.buildChaineUnique()
 
         passages = []
         texte = self.chaineUnique.split(". ")
@@ -104,11 +107,7 @@ class Corpus:
 
     def concorde(self,mot,tailleContexte):
         if self.chaineUnique == "":
-            liste = []
-            for i in self.id2doc.values():
-                txt = i.getText().replace("\n", " ")
-                liste.append(txt)
-            self.chaineUnique = " ".join(liste) # OK
+            self.buildChaineUnique()
 
         passages = {}
         passages["contexte gauche"] = []
@@ -144,87 +143,93 @@ class Corpus:
             i+=1
         return df
 
-    
     def buildVocab(self):
+        if self.chaineUnique == "":
+            self.buildChaineUnique()
         chaine = self.nettoyer_texte(self.chaineUnique)
-        texte = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
-        setVoca = sorted(set(texte)) # élimine les doublons
-        print("nombre de mots différents dans le corpus ",len(setVoca))
+        #print("chaine unique vocab (après nettoyage) : ",chaine)
+        mots = re.split(r'\s+', chaine) # split la liste avec espaces
+        setVoca = sorted(set(mots)) # élimine les doublons et range par ordre alpha
+        print("taille du vocabulaire : ",len(setVoca))
+        print(setVoca)
         vocabulaire = {}
+        id = 0
         for valeur in setVoca:
-            vocabulaire[valeur] = {'term frequency':0,'document frequency':0}
+            if valeur != '': #sinon ça mets la chaine vide dans le vocabulaire....
+                vocabulaire[valeur] = {'id':id,'term frequency':0,'document frequency':0} # mettre un id unique en 1ere position ?
+                id += 1
         self.vocab = vocabulaire
 
-    def stats(self):
-        if self.chaineUnique == "":
-            liste = []
-            for i in self.id2doc.values():
-                txt = i.getText().replace("\n", " ")
-                liste.append(txt)
-            self.chaineUnique = " ".join(liste) # OK
-        # tp 6
-        chaine = self.nettoyer_texte(self.chaineUnique)
-        texte = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
-        setVoca = sorted(set(texte)) # élimine les doublons
-        print("nombre de mots différents dans le corpus ",len(setVoca))
-        vocabulaire = {}
-        for valeur in setVoca:
-            vocabulaire[valeur] = {'term frequency':0,'document frequency':0}
+    def nettoyer_texte(self,chaine):
+        chaine.lower() # mets tout en minuscule
+        chaine.replace("\r\n","") # remplace le saut de ligne par une chaine vide
+        chaine = re.sub(r'[^\w\s]', '',chaine) # remplace la ponctuaction par des espaces
+        #chaine = re.sub(r'\b\w*[^\w\s]\w*\b', '', chaine) # enlève les mots qui contiennent de la ponctuation (ex : A_n)
+        chaine = re.sub(r'\b\w*\d+\w*\b', '', chaine) # enlève tous mots qui contiennent des chiffres
+        chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
+        # enlever https, www, tout les mots qui contiennent des chiffres (x3889, A_1) etc...
+        return chaine
 
+    def stats(self): # OK
         for doc in self.id2doc.values():
             txt = doc.getText()
             chaine = self.nettoyer_texte(txt)
             truc = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
             listeDejaVu = []
             for i in truc:
-                if i in setVoca: # si il est dans le vocabulaire alors on ajoute
-                    vocabulaire[i]['term frequency'] += 1
+                if i in self.vocab.keys(): # si il est dans le vocabulaire alors on ajoute
+                    self.vocab[i]['term frequency'] += 1
                     if i not in listeDejaVu:
-                        vocabulaire[i]['document frequency'] += 1
+                        self.vocab[i]['document frequency'] += 1
                         listeDejaVu.append(i)
 
-        print(vocabulaire)
-        df = pd.DataFrame(vocabulaire)
+        print(self.vocab)
+        df = pd.DataFrame(self.vocab)
         df = df.T # transpose = inverser rows et col
-        
-    def nettoyer_texte(self,chaine):
-        chaine.lower()
-        chaine.replace("\r\n", " ")
-        re.sub(r'[^\w\s]','',chaine) # pas très utile
-        re.sub(r'[0-9]','',chaine)
-        print("chaine nettoyée => ",chaine)
-        # remplacer les ponctuations et les chiffres `a l’aide d’expressions r ́eguli`eres
-        # appropri ́ees
-        return chaine
+        display(df)
 
     def matrice(self):
-        # POUR TP 7
-        chaine = self.nettoyer_texte(self.chaineUnique)
-        texte = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
-        setVoca = sorted(set(texte)) # élimine les doublons et trie
+        # POUR partie 1 : TP 7
 
-        data = []
-        rows = [] #document
-        cols = [] # mot
-        for valeur in setVoca:
-            cols.append(valeur)
-        # OK
+        rows = [] #document (i)
+        cols = [] # mot (j)
+        data = [] # à l'intersection (i,j) on place le nb d'occurence du mot dans le document
+
+        testDict = {}
         for doc in self.id2doc.values():
             rows.append(doc.getTitre())
-            txt = doc.getText()
-            chaine = self.nettoyer_texte(txt)
-            truc = re.split(r"[\b\W\b]+",chaine) # split la liste avec espaces, ponctuation etc...
+            testDict[doc.getTitre()] = {}
+            docText = doc.getText()
+            chaineCleaned = self.nettoyer_texte(docText)
+            splitedWords = re.split(r"[\b\W\b]+",chaineCleaned) # split la liste avec espaces, ponctuation etc...
             deja_vu = []
-            for i in truc:
-                if i in setVoca and i not in deja_vu: # si il est dans le vocabulaire alors on ajoute
-                    nbOccurence = truc.count(i)
-                    deja_vu.append(i)
-                    data.append(nbOccurence)
-        #mat_TF = csr_matrix(data,(rows,cols),shape=(len(rows),len(cols))).toarray()
-        mat_TF = csr_matrix(data,(rows,cols)).toarray()
 
-        return mat_TF
-        #mat_TFxIDF = csr_matrix((data,(rows,cols))).toarray()
+            for v in self.vocab.keys(): #initialise a 0
+                testDict[doc.getTitre()][v] = 0
+
+            for mot in splitedWords:
+                if mot in self.vocab.keys() and mot not in deja_vu: # si il est dans le vocabulaire alors on ajoute
+                    nbOccurence = splitedWords.count(mot) # on compte directement tout les mêmes mots d'un texte
+                    testDict[doc.getTitre()][v] = nbOccurence
+                    deja_vu.append(mot)
+                    data.append(nbOccurence)
+
+
+        #print(testDict) # OK
+        df = pd.DataFrame(testDict)
+        display(df)
+
+        #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
+        #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
+        #df = pd.DataFrame(data)
+        #display(df)
+        #mat_TF = csr_matrix(data,(rows,cols)).toarray()
+
+
+        #print(data)
+        #mat_TF = csr_matrix(data)
+        #return mat_TF
+        #mat_TF_IDF = csr_matrix((data,(rows,cols))).toarray()
         #row = np.array([0, 1, 2, 0])
         #col = np.array([0, 1, 1, 0])
         #data = np.array([1, 2, 4, 8])
@@ -235,7 +240,7 @@ class Corpus:
         #       [0, 4, 0]])
 
     def recherche(self,motsCles):
-        #TP 7 : part 2
+        # POUR partie 2 : TP 7
         vectMots = self.nettoyer_texte(motsCles)
 
 
