@@ -213,6 +213,8 @@ class Corpus:
             splitedWords = re.split('\s+', chaineCleaned) # split la liste avec espaces
 
             deja_vu = []
+            for word in self.vocab.keys(): # initialisation
+                dictTF[doc.getTitre()][word] = 0
 
             for word in splitedWords:
                 dictTF[doc.getTitre()][word] = 0 # initialisation (bug)
@@ -245,7 +247,6 @@ class Corpus:
             # mettre à 0 les mots qui manquent au vocabulaire
             tf_scores[word]['total_count'] = sum(1 for doc in self.id2doc.values() if word in doc.getText())
 
-
         # dictionnaire qui contiendra les mots et leur score idf
         idf_scores = {}
 
@@ -258,22 +259,33 @@ class Corpus:
                 idf_scores[word] = math.log(len(self.id2doc) / scores['total_count'])
 
         # création de la matrice tf-idf
-        mat_TFxIDF = []
+        #mat_TFxIDF = []
+        dictTFxIDF = {}
         for doc in self.id2doc.values():
-            doc_tfidf = []
+            dictTFxIDF[doc.getTitre()] = {}
+            #doc_tfidf = []
             chaineCleaned = self.nettoyer_texte(doc.getText())
             splitedWords = chaineCleaned.split() # split la liste avec espaces
+            for word in self.vocab.keys(): # initialisation
+                dictTFxIDF[doc.getTitre()][word] = 0
             for word in splitedWords:
                 tf = tf_scores[word]['doc_count'] / len(splitedWords)
                 idf = idf_scores[word]
-                doc_tfidf.append(tf * idf)
-            mat_TFxIDF.append(doc_tfidf)
+                #doc_tfidf.append(tf * idf)
+                dictTFxIDF[doc.getTitre()][word] = tf * idf
+            #mat_TFxIDF.append(doc_tfidf)
 
-        print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
+        #print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
+        #print(mat_TFxIDF[0]) # => les scores TF-IDF de chaque mot (du document) pour le premier document
 
-        df = pd.DataFrame(dictTF)
-        #display(df)
-        df.to_csv("TF.csv", sep='\t',encoding='utf-8')
+
+
+
+        dfTF = pd.DataFrame(dictTF) # OK
+        dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
+        display(dfTFxIDF)
+        dfTF.to_csv("TF.csv", sep='\t',encoding='utf-8')
+        dfTFxIDF.to_csv("TFxIDF.csv", sep='\t',encoding='utf-8')
 
         #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
         #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
@@ -295,9 +307,72 @@ class Corpus:
         #array([[9, 0, 0],
         #       [0, 2, 0],
         #       [0, 4, 0]])
-
+        return False
     def recherche(self,motsCles):
         # POUR partie 2 : TP 7
-        vectMots = self.nettoyer_texte(motsCles)
+        # BONNE PISTE
+        from numpy import dot
+        from numpy.linalg import norm
+
+
+        print(motsCles)
+        # vecteur
+        vectorMotCles = []
+        for word in self.vocab.keys():
+            if word in motsCles:
+                vectorMotCles.append(1)
+            else:
+                vectorMotCles.append(0)
+
+        # vecteur du vocabulaire
+        #vocab_vector = [1 for word in self.vocab.keys()]
+
+        # Vecteur de chaque document
+        dictVectors = {}
+        for doc in self.id2doc.values():
+            dictVectors[doc.getTitre()] = []
+            chaineCleaned = self.nettoyer_texte(doc.getText())
+            splitedWords = chaineCleaned.split() # split la liste avec espaces
+            for word in self.vocab.keys():
+                if word in splitedWords:
+                    dictVectors[doc.getTitre()].append(1)
+                else:
+                    dictVectors[doc.getTitre()].append(0)
+
+        # Calculer la similarité entre 'vectorMotCles' et chaque vecteurs
+        res = {}
+        for title,vector in dictVectors.items():
+            cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK (warning dision by zero)
+            res[title] = cosine_similarity
+
+
+        trie = sorted(res.items(), key=lambda x: x[1], reverse=True)
+        print(trie)
+        return None
+    def testR(self,motsCles):
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity
+
+        # Créez une instance de TfidfVectorizer
+        vectorizer = TfidfVectorizer(vocabulary=self.vocab.keys())
+        # Appelez la méthode fit_transform sur les mots-clés pour obtenir le vecteur
+        vecteurRequete = vectorizer.fit_transform(motsCles)
+        # Retournez le vecteur sous forme de liste
+        print(vecteurRequete.toarray()) # OK
+        # _____
+        print(self.vocab.keys())
+        # calculer maintenant la similarité entre le vecteur requête et le vecteur du texte visé
+        #ex :
+        listeVec = []
+        first = True
+        for doc in self.id2doc.values(): # calcul de tout les TFxIDF de chaque texte
+            if first == True:
+                print(doc.getText())
+            listeVec.append((vectorizer.fit_transform([doc.getText()])).toarray())
+            first = False
+        print(listeVec[0])
+
+
+
 
 
