@@ -278,9 +278,6 @@ class Corpus:
         #print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
         #print(mat_TFxIDF[0]) # => les scores TF-IDF de chaque mot (du document) pour le premier document
 
-
-
-
         dfTF = pd.DataFrame(dictTF) # OK
         dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
         display(dfTFxIDF)
@@ -293,8 +290,6 @@ class Corpus:
         #display(df)
         #mat_TF = csr_matrix(data,(rows,cols)).toarray()
 
-
-        #print(data)
         #mat_TF = csr_matrix(testDict)
         #print(mat_TF)
         #return mat_TF
@@ -342,13 +337,18 @@ class Corpus:
         # Calculer la similarité entre 'vectorMotCles' et chaque vecteurs
         res = {}
         for title,vector in dictVectors.items():
-            cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK (warning dision by zero)
+            if norm(vectorMotCles) * norm(vector) == 0:
+                cosine_similarity = 0.0
+            else:
+                cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK (warning dision by zero)
             res[title] = cosine_similarity
 
 
         trie = sorted(res.items(), key=lambda x: x[1], reverse=True)
-        print(trie)
+        print(trie) # OK ça passe
+
         return None
+
     def testR(self,motsCles):
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.metrics.pairwise import cosine_similarity
