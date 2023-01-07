@@ -1,8 +1,8 @@
 import pickle
-import Corpus
+import src.Corpus_modif
 from importlib import reload
 
-reload(Corpus)
+reload(src.Corpus_modif)
 
 # Ouverture du fichier, puis lecture avec pickle
 with open("../test_data/id2doc.pkl", "rb") as f:
@@ -13,7 +13,7 @@ with open("../test_data/id2aut.pkl", "rb") as f:
     id2aut = pickle.load(f)
 
 
-corpus = Corpus.Corpus("Space",id2aut,id2doc)
+corpus = src.Corpus_modif.Corpus("Space",id2aut,id2doc)
 import pandas as pd
 dfDocs = corpus.get_id2doc_DF()
 

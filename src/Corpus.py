@@ -281,8 +281,8 @@ class Corpus:
         dfTF = pd.DataFrame(dictTF) # OK
         dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
         display(dfTFxIDF)
-        dfTF.to_csv("TF.csv", sep='\t',encoding='utf-8')
-        dfTFxIDF.to_csv("TFxIDF.csv", sep='\t',encoding='utf-8')
+        dfTF.to_csv("../output_data/TF.csv", sep='\t',encoding='utf-8')
+        dfTFxIDF.to_csv("../output_data/TFxIDF.csv", sep='\t',encoding='utf-8')
 
         #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
         #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
