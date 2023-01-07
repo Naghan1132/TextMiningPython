@@ -8,8 +8,7 @@ import math
 from numpy import dot
 from numpy.linalg import norm
 from collections import OrderedDict
-# Un singleton est un patron de conception qui permet
-# de s'assurer qu'une classe ne dispose que d'une et une seule instance.
+
 
 '''def singleton(Corpus):
     instances = [None]

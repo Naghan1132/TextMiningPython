@@ -81,9 +81,9 @@ for values in dic['feed']['entry']:
             document.setListeAutheurs(listeA)
             id2doc[indice] = document
             indice += 1
-            i = id2aut.get(a)
-            if i:
-                i.add(document)
+            authorInId2aut = id2aut.get(a)
+            if authorInId2aut:
+                authorInId2aut.add(document)
             else:
                 production = {}
                 auteur = src.Author.Author(a,0,production)
@@ -102,9 +102,9 @@ for values in dic['feed']['entry']:
         id2doc[indice] = document
         indice += 1
         for nomAuteur in listeAuteur:
-            i = id2aut.get(nomAuteur)
-            if i:
-                i.add(document)
+            authorInId2aut = id2aut.get(nomAuteur)
+            if authorInId2aut:
+                authorInId2aut.add(document)
             else:
                 production = {}
                 auteur = src.Author.Author(nomAuteur,0,production)
