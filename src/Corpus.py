@@ -5,9 +5,10 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
 import math
+from numpy import dot
+from numpy.linalg import norm
+from collections import OrderedDict
 
-# Un singleton est un patron de conception qui permet
-# de s'assurer qu'une classe ne dispose que d'une et une seule instance.
 
 '''def singleton(Corpus):
     instances = [None]
@@ -30,7 +31,9 @@ class Corpus:
         self.ndoc = len(id2doc) #nb document
         self.chaineUnique = ""
         self.vocab = {}
+        self.buildChaineUnique()
         self.buildVocab()
+        self.dfTri = {}
 
     def addDoc(self,document):
         if len(self.id2doc.keys()) == 0:
@@ -57,7 +60,6 @@ class Corpus:
         return dicTri
 
     def trieTitre(self,nombreDocVoulu):
-        print("test")
         listeTitre = []
         for doc in self.id2doc.values():
             listeTitre.append(doc.titre)
@@ -72,34 +74,28 @@ class Corpus:
                     indice += 1
         return dicTri
 
-    def save(self,nom): # KO
-        # faire ça ?
-        #print(self.id2doc)
-        #df = pd.DataFrame.from_dict(dic,orient="index",columns=['titre','auteur','date','url','texte'])
-
-        #df.to_csv(nom+".csv", sep='\t',encoding='utf-8')
-        pass
+    def save(self,nom):
+        dic = {}
+        df = pd.DataFrame.from_dict(dic,orient="index",columns=['titre','auteur','date','url','texte'])
+        df.to_csv(nom+".csv", sep='\t',encoding='utf-8')
 
     def load(self,nom):
         with open(nom+".csv", "r") as f:
             corpus = pd.read_csv(f, sep="\t")
-        #return corpus
+        return corpus
 
     def __repr__(self):
-        pass
+        return "Corpus ",self.nom," avec ",self.ndoc," documents"
 
     def buildChaineUnique(self):
         liste = []
         for i in self.id2doc.values():
             txt = i.getText().replace("\n", " ")
             liste.append(txt)
-        self.chaineUnique = " ".join(liste) # OK
+        self.chaineUnique = " ".join(liste)
 
     def search(self,mot):
         #retourne les passages des documents contenant le mot-clef entré en paramétre
-        if self.chaineUnique == "":
-            self.buildChaineUnique()
-
         passages = []
         texte = self.chaineUnique.split(". ")
         for i in texte:
@@ -109,46 +105,36 @@ class Corpus:
 
 
     def concorde(self,mot,tailleContexte):
-        if self.chaineUnique == "":
-            self.buildChaineUnique()
-
         passages = {}
         passages["contexte gauche"] = []
         passages["motif trouvé"] = []
         passages["contexte droite"] = []
 
         phrases = self.chaineUnique.split(". ")
-        #print("texte ",texte)
+
         for phrase in phrases:
             if re.search(mot,phrase): # on trouve le mot voulu dans la phrase
-                #print("mot trouvé !")
-                #print(phrase)
                 span = re.search(mot,phrase).span()
-                #print("position : ",span)
                 gauche = phrase[span[0]-tailleContexte:span[0]]
                 txt = phrase[span[0]:span[1]]
                 droite = phrase[span[1]:span[1]+tailleContexte]
                 passages["contexte gauche"].append(gauche)
                 passages["motif trouvé"].append(txt)
                 passages["contexte droite"].append(droite)
-                #GÉRER LES ERREURS SI ON SORT DE LA TAILLE DE LA PHRASE
 
-        print(passages)
         df = pd.DataFrame.from_dict(passages)
-        print(df)
+        display(df)
     
     def get_id2doc_DF(self):
-        df = pd.DataFrame(columns=['Id','Nom','Auteur','Date','URL','Text'])
+        df = pd.DataFrame(columns=['Id','Nom','Auteur','Date','URL','Text','Textabrv','Type'])
         i=1
         for doc in self.id2doc.values():           
-            row = [i,doc.getTitre(),doc.getAuteur(),doc.getDate(),doc.getUrl(),doc.getText()[:10]+'...']
+            row = [i,doc.getTitre(),doc.getAuteur(),doc.getDate(),doc.getUrl(),doc.getText(),doc.getText()[:10]+'...',doc.getType()]
             df.loc[len(df)] = row
             i+=1
         return df
 
     def buildVocab(self):
-        if self.chaineUnique == "":
-            self.buildChaineUnique()
         chaine = self.nettoyer_texte(self.chaineUnique)
         mots = re.split(r'\s+', chaine) # split la liste avec espaces
         setVoca = sorted(set(mots)) # élimine les doublons et range par ordre alphabétique
@@ -284,43 +270,17 @@ class Corpus:
         dfTF.to_csv("../output_data/TF.csv", sep='\t',encoding='utf-8')
         dfTFxIDF.to_csv("../output_data/TFxIDF.csv", sep='\t',encoding='utf-8')
 
-        #df=pd.DataFrame({"Name":['Tom','Nick','John','Peter'],"Age":[15,26,17,28]})
-        #mat_TF = csr_matrix((data, (rows,cols)),shape=(len(rows),len(cols))).toarray()
-        #df = pd.DataFrame(data)
-        #display(df)
-        #mat_TF = csr_matrix(data,(rows,cols)).toarray()
-
-        #mat_TF = csr_matrix(testDict)
-        #print(mat_TF)
-        #return mat_TF
-        #mat_TF_IDF = csr_matrix((data,(rows,cols))).toarray()
-        #row = np.array([0, 1, 2, 0])
-        #col = np.array([0, 1, 1, 0])
-        #data = np.array([1, 2, 4, 8])
-
-        #csr_matrix((data, (row, col)), shape=(3, 3)).toarray()
-        #array([[9, 0, 0],
-        #       [0, 2, 0],
-        #       [0, 4, 0]])
-        return False
+        return None
     def recherche(self,motsCles):
         # POUR partie 2 : TP 7
-        # BONNE PISTE
-        from numpy import dot
-        from numpy.linalg import norm
-
-
         print(motsCles)
-        # vecteur
+        # vecteur 'motsCles'
         vectorMotCles = []
         for word in self.vocab.keys():
             if word in motsCles:
                 vectorMotCles.append(1)
             else:
                 vectorMotCles.append(0)
-
-        # vecteur du vocabulaire
-        #vocab_vector = [1 for word in self.vocab.keys()]
 
         # Vecteur de chaque document
         dictVectors = {}
@@ -337,17 +297,16 @@ class Corpus:
         # Calculer la similarité entre 'vectorMotCles' et chaque vecteurs
         res = {}
         for title,vector in dictVectors.items():
-            if norm(vectorMotCles) * norm(vector) == 0:
+            if norm(vectorMotCles) * norm(vector) == 0: 
                 cosine_similarity = 0.0
             else:
-                cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK (warning dision by zero)
+                cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK
             res[title] = cosine_similarity
 
-
-        trie = sorted(res.items(), key=lambda x: x[1], reverse=True)
-        print(trie) # OK ça passe
-
-        return None
+        print("--------------------------------------")
+        self.dfTri = dict(sorted(res.items(), key=lambda x: x[1],reverse=True))
+        
+        return self.dfTri
 
     def testR(self,motsCles):
         from sklearn.feature_extraction.text import TfidfVectorizer
@@ -371,7 +330,6 @@ class Corpus:
             listeVec.append((vectorizer.fit_transform([doc.getText()])).toarray())
             first = False
         print(listeVec[0])
-
 
 
 
