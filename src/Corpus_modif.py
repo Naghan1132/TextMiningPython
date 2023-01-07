@@ -31,8 +31,8 @@ class Corpus:
         self.ndoc = len(id2doc) #nb document
         self.chaineUnique = ""
         self.vocab = {}
-        self.buildVocab()
         self.buildChaineUnique()
+        self.buildVocab()
         self.dfTri = {}
 
     def addDoc(self,document):
