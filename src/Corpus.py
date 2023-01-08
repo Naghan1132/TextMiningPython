@@ -18,6 +18,7 @@ def singleton(Corpus):
         return instances[0]
     return wrapper
 
+
 @singleton
 class Corpus:
 
@@ -33,6 +34,8 @@ class Corpus:
         self.buildChaineUnique()
         self.buildVocab()
         self.dfTri = {}
+        self.dfTF = pd.DataFrame()
+        self.dfTFxIDF = pd.DataFrame()
 
     def addDoc(self,document):
         if len(self.id2doc.keys()) == 0:
@@ -124,15 +127,21 @@ class Corpus:
 
         df = pd.DataFrame.from_dict(passages)
         display(df)
-    
+
     def get_id2doc_DF(self):
         df = pd.DataFrame(columns=['Id','Nom','Auteur','Date','URL','Text','Textabrv','Type'])
         i=1
-        for doc in self.id2doc.values():           
+        for doc in self.id2doc.values():
             row = [i,doc.getTitre(),doc.getAuteur(),doc.getDate(),doc.getUrl(),doc.getText(),doc.getText()[:10]+'...',doc.getType()]
             df.loc[len(df)] = row
             i+=1
         return df
+
+    def getdfTF(self):
+        return self.dfTF
+
+    def getdfTFxIdf(self):
+        return self.dfTFxIDF
 
     def buildVocab(self):
         chaine = self.nettoyer_texte(self.chaineUnique)
@@ -266,11 +275,13 @@ class Corpus:
 
         dfTF = pd.DataFrame(dictTF) # OK
         dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
+
+        self.dfTF = dfTF
+        self.dfTFxIDF =dfTFxIDF
         display(dfTFxIDF)
         dfTF.to_csv("../output_data/TF.csv", sep='\t',encoding='utf-8')
         dfTFxIDF.to_csv("../output_data/TFxIDF.csv", sep='\t',encoding='utf-8')
 
-        return None
     def recherche(self,motsCles):
         # POUR partie 2 : TP 7
         print(motsCles)
@@ -297,7 +308,7 @@ class Corpus:
         # Calculer la similarité entre 'vectorMotCles' et chaque vecteurs
         res = {}
         for title,vector in dictVectors.items():
-            if norm(vectorMotCles) * norm(vector) == 0: 
+            if norm(vectorMotCles) * norm(vector) == 0:
                 cosine_similarity = 0.0
             else:
                 cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK
@@ -305,7 +316,7 @@ class Corpus:
 
         print("--------------------------------------")
         self.dfTri = dict(sorted(res.items(), key=lambda x: x[1],reverse=True))
-        
+
         return self.dfTri
 
     def testR(self,motsCles):
