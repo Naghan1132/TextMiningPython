@@ -220,28 +220,24 @@ class Corpus:
             print("Nombre de mots différents dans le corpus : ",len(self.vocabArxiv))
             trie = sorted(self.vocabArxiv.items(), key=lambda x: x[1]['term frequency'], reverse=True)
 
-        i=0
+        i = 0
         for i in range(n):
             valeur = trie[i]
             print(f"{i + 1}ème position : {valeur[0]} = {valeur[1]['term frequency']} term frequency")
 
-        return trie
         df = pd.DataFrame(self.vocab)
         df = df.T # transpose = inverser rows et col
         display(df)
 
+        return trie
+
+
     def matrice(self):
         # POUR partie 1 : TP 7
-
-        rows = [] #document (i)
-        cols = [] # mot (j)
-        data = [] # à l'intersection (i,j) on place le nb d'occurence du mot dans le document
-
-        dictTF = {}
+        mat_tf = {}
 
         for doc in self.id2doc.values():
-            rows.append(doc.getTitre())
-            dictTF[doc.getTitre()] = {}
+            mat_tf[doc.getTitre()] = {}
 
             docText = doc.getText()
             chaineCleaned = self.nettoyer_texte(docText)
@@ -251,33 +247,30 @@ class Corpus:
             deja_vu_Reddit = []
             deja_vu_Arxiv = []
             for word in self.vocab.keys(): # initialisation
-                dictTF[doc.getTitre()][word] = 0
+                mat_tf[doc.getTitre()][word] = 0
 
             for word in splitedWords:
-                dictTF[doc.getTitre()][word] = 0 # initialisation (bug)
+                mat_tf[doc.getTitre()][word] = 0 # initialisation (bug)
                 if word in self.vocab.keys(): # il est dans le vocabulaire
                     self.vocab[word]['term frequency'] += 1
                     if word not in deja_vu: # première fois que l'on tombe dessus dans le document
                         nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        dictTF[doc.getTitre()][word] = nbOccurence
+                        mat_tf[doc.getTitre()][word] = nbOccurence
                         deja_vu.append(word)
-                        data.append(nbOccurence)
                         self.vocab[word]['document frequency'] += 1
                 if word in self.vocabReddit.keys(): # il est dans le vocabulaire
                     self.vocabReddit[word]['term frequency'] += 1
                     if word not in deja_vu_Reddit: # première fois que l'on tombe dessus dans le document
                         nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        dictTF[doc.getTitre()][word] = nbOccurence
+                        mat_tf[doc.getTitre()][word] = nbOccurence
                         deja_vu_Reddit.append(word)
-                        data.append(nbOccurence)
                         self.vocabReddit[word]['document frequency'] += 1
                 if word in self.vocabArxiv.keys(): # il est dans le vocabulaire
                     self.vocabArxiv[word]['term frequency'] += 1
                     if word not in deja_vu_Arxiv: # première fois que l'on tombe dessus dans le document
                         nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        dictTF[doc.getTitre()][word] = nbOccurence
+                        mat_tf[doc.getTitre()][word] = nbOccurence
                         deja_vu_Arxiv.append(word)
-                        data.append(nbOccurence)
                         self.vocabArxiv[word]['document frequency'] += 1
 
         # ==== TF_IDF === :
@@ -331,8 +324,9 @@ class Corpus:
         #print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
         #print(mat_TFxIDF[0]) # => les scores TF-IDF de chaque mot (du document) pour le premier document
 
-        dfTF = pd.DataFrame(dictTF) # OK
+        dfTF = pd.DataFrame(mat_tf) # OK
         dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
+
 
         self.dfTF = dfTF
         self.dfTFxIDF =dfTFxIDF
@@ -377,30 +371,3 @@ class Corpus:
         self.dfTri = dict(sorted(res.items(), key=lambda x: x[1],reverse=True))
 
         return self.dfTri
-
-    def testR(self,motsCles):
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
-
-        # Créez une instance de TfidfVectorizer
-        vectorizer = TfidfVectorizer(vocabulary=self.vocab.keys())
-        # Appelez la méthode fit_transform sur les mots-clés pour obtenir le vecteur
-        vecteurRequete = vectorizer.fit_transform(motsCles)
-        # Retournez le vecteur sous forme de liste
-        print(vecteurRequete.toarray()) # OK
-        # _____
-        print(self.vocab.keys())
-        # calculer maintenant la similarité entre le vecteur requête et le vecteur du texte visé
-        #ex :
-        listeVec = []
-        first = True
-        for doc in self.id2doc.values(): # calcul de tout les TFxIDF de chaque texte
-            if first == True:
-                print(doc.getText())
-            listeVec.append((vectorizer.fit_transform([doc.getText()])).toarray())
-            first = False
-        print(listeVec[0])
-
-
-
-
