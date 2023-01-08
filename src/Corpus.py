@@ -10,16 +10,15 @@ from numpy.linalg import norm
 from collections import OrderedDict
 
 
-'''def singleton(Corpus):
+def singleton(Corpus):
     instances = [None]
     def wrapper(nom, authors, id2doc):
         if instances[0] is None:
             instances[0] = Corpus(nom, authors, id2doc)
         return instances[0]
-    return wrapper'''
+    return wrapper
 
-
-#@singleton
+@singleton
 class Corpus:
 
     def __init__(self,nom,authors,id2doc):
@@ -41,6 +40,7 @@ class Corpus:
         else:
             indice = max(list(self.id2doc.keys())) + 1
         self.id2doc[indice] = document
+        self.buildChaineUnique()
     def setAuteurs(self,dicAuteurs):
         self.authors = dicAuteurs
     def trieDate(self,nombreDocVoulu):
