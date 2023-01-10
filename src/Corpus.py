@@ -1,13 +1,11 @@
 import pandas as pd
 import re
-from scipy.sparse import csr_matrix
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
 import math
 from numpy import dot
 from numpy.linalg import norm
-from collections import OrderedDict
 
 
 '''def singleton(Corpus):
