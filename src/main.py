@@ -12,7 +12,7 @@ with open("../test_data/id2doc.pkl", "rb") as f:
 with open("../test_data/id2aut.pkl", "rb") as f:
     id2aut = pickle.load(f)
 
-corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
+corpus = Corpus.Corpus("Space",id2aut,id2doc)
 corpus.id2doc[1].getDate()
 
 n_docs = len(corpus.id2doc)
