@@ -23,10 +23,10 @@ class Corpus:
     def __init__(self,nom,authors,id2doc):
         #variable privée : __variable
         self.nom = nom
-        self.authors = authors #dictionnaire d'auteurs
-        self.id2doc = id2doc #dictionnaire de docs
-        self.naut = len(authors) #nb autheur
-        self.ndoc = len(id2doc) #nb document
+        self.authors = authors # dictionnaire d'auteurs
+        self.id2doc = id2doc # dictionnaire de docs
+        self.naut = len(authors) # nb autheur
+        self.ndoc = len(id2doc) # nb document
         self.chaineUnique = ""
         self.vocab = {}
         self.buildChaineUnique()
@@ -49,7 +49,7 @@ class Corpus:
         for doc in self.id2doc.values():
             listeDate.append(doc.date)
 
-        listeDate.sort()#OK
+        listeDate.sort() # OK
         indice = 0
         dicTri = {}
         while indice < nombreDocVoulu:
@@ -95,7 +95,7 @@ class Corpus:
         self.chaineUnique = " ".join(liste)
 
     def search(self,mot):
-        #retourne les passages des documents contenant le mot-clef entré en paramétre
+        # retourne les passages des documents contenant le mot-clef entré en paramétre
         passages = []
         texte = self.chaineUnique.split(". ")
         for i in texte:
@@ -146,7 +146,7 @@ class Corpus:
         vocabulaire = {}
         id = 0
         for valeur in setVoca:
-            if valeur != '': #sinon ça mets la chaine vide dans le vocabulaire....
+            if valeur != '': # sinon ça mets la chaine vide dans le vocabulaire
                 vocabulaire[valeur] = {'id':id,'term frequency':0,'document frequency':0} # mettre un id unique en 1ere position ?
                 id += 1
         self.vocab = vocabulaire
@@ -154,7 +154,6 @@ class Corpus:
     def nettoyer_texte(self,chaine):
         # remove links
         chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
-        #chaine.split()
         # tokenize
         tokens = word_tokenize(chaine)
         #convert in lower case
@@ -245,22 +244,20 @@ class Corpus:
                 idf_scores[word] = math.log(len(self.id2doc) / scores['total_count'])
 
         # création de la matrice tf-idf
-        #mat_TFxIDF = []
-        dictTFxIDF = {}
+        mat_TFxIDF = {}
         for doc in self.id2doc.values():
-            dictTFxIDF[doc.getTitre()] = {}
-            #doc_tfidf = []
+            mat_TFxIDF[doc.getTitre()] = {}
             chaineCleaned = self.nettoyer_texte(doc.getText())
             splitedWords = chaineCleaned.split() # split la liste avec espaces
             for word in self.vocab.keys(): # initialisation
-                dictTFxIDF[doc.getTitre()][word] = 0
+                mat_TFxIDF[doc.getTitre()][word] = 0
             for word in splitedWords:
                 tf = tf_scores[word]['doc_count'] / len(splitedWords)
                 idf = idf_scores[word]
-                dictTFxIDF[doc.getTitre()][word] = tf * idf
+                mat_TFxIDF[doc.getTitre()][word] = tf * idf
 
         dfTF = pd.DataFrame(mat_tf) # OK
-        dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
+        dfTFxIDF = pd.DataFrame(mat_TFxIDF) # OK
 
         self.dfTF = dfTF
         self.dfTFxIDF =dfTFxIDF
@@ -270,9 +267,7 @@ class Corpus:
         dfTFxIDF.to_csv("../output_data/TFxIDF.csv", sep='\t',encoding='utf-8')
 
     def recherche(self,motsCles):
-        # POUR partie 2 : TP 7
-        print(motsCles)
-        # vecteur 'motsCles'
+        # vecteur 'motsCles' :
         vectorMotCles = []
         for word in self.vocab.keys():
             if word in motsCles:
