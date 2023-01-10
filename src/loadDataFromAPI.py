@@ -25,7 +25,7 @@ hot_posts = reddit.subreddit('space').hot(limit=1000) # get n first hot posts fr
 nb_doc_non_vide = 0
 
 for post in hot_posts:
-    if nb_doc_non_vide == 40:
+    if nb_doc_non_vide == 30:
         break
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
     post.selftext.replace("\r\n", " ")
