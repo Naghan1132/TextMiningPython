@@ -29,7 +29,6 @@ for post in hot_posts:
         # si c'est une image ou un lien dans le texte et pas une discussion etc... :
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)
     else:
-        post.selftext.replace("\r\n", " ")
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
     id2doc[indice] = document
