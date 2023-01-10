@@ -20,40 +20,41 @@ indice = 1
 # =============== REDDIT ===============
 
 reddit = praw.Reddit(client_id='KL8AdjqIAdRyS3uaswVLCA',client_secret='5vOe4iyO_1XBrq0LISlxe06MlK1f-Q',user_agent='nathan')
-hot_posts = reddit.subreddit('space').hot(limit=5) # get 5 first hot posts from the Space subreddit
+hot_posts = reddit.subreddit('space').hot(limit=100) # get 5 first hot posts from the Space subreddit
+
+nb_doc_non_vides = 0
 
 for post in hot_posts:
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
     post.selftext.replace("\r\n", " ")
-    if post.selftext == "":
-        # si c'est une image ou un lien dans le texte et pas une discussion etc... :
-        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)
-    else:
+    if post.selftext != "":
+        nb_doc_non_vides += 1
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
-    id2doc[indice] = document
-    indice += 1
+        id2doc[indice] = document
+        indice += 1
 
-    # commentaires :
-    commentaireList = []
-    post.comments.replace_more(limit=None)
-    for comment in post.comments.list():
-        commentaireList.append(comment)
-    document.setNbCommentaire(len(commentaireList))
+        # commentaires :
+        commentaireList = []
+        post.comments.replace_more(limit=None)
+        for comment in post.comments.list():
+            commentaireList.append(comment)
+        document.setNbCommentaire(len(commentaireList))
 
-    # auteurs :
-    authorInId2aut = id2aut.get(post.author.name)
-    if authorInId2aut:
-        authorInId2aut.add(document)
-    else:
-        production = {}
-        auteur = src.Author.Author(post.author.name,0,production)
-        auteur.add(document)
-        id2aut[post.author.name] = auteur
+        # auteurs :
+        authorInId2aut = id2aut.get(post.author.name)
+        if authorInId2aut:
+            authorInId2aut.add(document)
+        else:
+            production = {}
+            auteur = src.Author.Author(post.author.name,0,production)
+            auteur.add(document)
+            id2aut[post.author.name] = auteur
 
 # =============== ARXIV ===============
 
-url = 'http://export.arxiv.org/api/query?search_query=all:space&start=0&max_results=5'
+url = 'http://export.arxiv.org/api/query?search_query=all:space&start=0&max_results='+str(nb_doc_non_vides)
+
 data = urllib.request.urlopen(url)
 xml = data.read().decode('utf-8')
 dic = xmltodict.parse(xml)
