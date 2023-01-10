@@ -20,15 +20,18 @@ indice = 1
 # =============== REDDIT ===============
 
 reddit = praw.Reddit(client_id='KL8AdjqIAdRyS3uaswVLCA',client_secret='5vOe4iyO_1XBrq0LISlxe06MlK1f-Q',user_agent='nathan')
-hot_posts = reddit.subreddit('space').hot(limit=100) # get 5 first hot posts from the Space subreddit
+hot_posts = reddit.subreddit('space').hot(limit=1000) # get n first hot posts from the Space subreddit
 
-nb_doc_non_vides = 0
+nb_doc_non_vide = 0
 
 for post in hot_posts:
+    if nb_doc_non_vide == 25:
+        break
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
     post.selftext.replace("\r\n", " ")
     if post.selftext != "":
-        nb_doc_non_vides += 1
+        nb_doc_non_vide += 1
+        print(nb_doc_non_vide)
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
         id2doc[indice] = document
@@ -53,7 +56,7 @@ for post in hot_posts:
 
 # =============== ARXIV ===============
 
-url = 'http://export.arxiv.org/api/query?search_query=all:space&start=0&max_results='+str(nb_doc_non_vides)
+url = 'http://export.arxiv.org/api/query?search_query=all:space&start=0&max_results='+str(nb_doc_non_vide)
 
 data = urllib.request.urlopen(url)
 xml = data.read().decode('utf-8')
