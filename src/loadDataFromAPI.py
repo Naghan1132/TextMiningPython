@@ -15,7 +15,6 @@ reload(src.DocumentGenerator)
 
 id2doc = {}
 id2aut = {}
-docs = []
 indice = 1
 
 # =============== REDDIT ===============
@@ -28,11 +27,9 @@ for post in hot_posts:
     post.selftext.replace("\r\n", " ")
     if post.selftext == "":
         # si c'est une image ou un lien dans le texte et pas une discussion etc... :
-        docs.append([len(docs),post.title+" "+post.url,'reddit',post.url])
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.url,dateTime)
     else:
         post.selftext.replace("\r\n", " ")
-        docs.append([len(docs),post.selftext,'reddit',post.url])
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
     id2doc[indice] = document
@@ -68,7 +65,6 @@ for values in dic['feed']['entry']:
     resumer.replace("\r\n"," ")
     link = values.get('link')
     url = link[0].get('@href') # ok
-    docs.append([len(docs),resumer,'arxiv',url])
     nomAuteur = values.get('author')
 
     if len(nomAuteur) == 1:
