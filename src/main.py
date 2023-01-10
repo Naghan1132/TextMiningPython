@@ -329,34 +329,6 @@ def callback_func_4(visibility_state):
         return {'z-index':'1','display': 'block','width':'100%','height':'100%','position':'absolute','background-color':'white'}
     if visibility_state == 'Details':
         return {'z-index':'1','display': 'none','width':'100%','height':'100%','position':'absolute','background-color':'white'}
-"""
-@app.callback(
-    [Output("divDetailsLeft", "children"),
-     Output("divDetailsLeft", "style"),
-     Output("divLeft","style")],
-    [Input('tableReddit', 'active_cell'),
-     Input('btnBackLeft', 'n_clicks')],
-    State('tableReddit', 'data')
-)
-def callback_func_3(active_cell,clicks,data):  
-    return_value=()
-    global goBack
-    if not(goBack):
-        if active_cell:
-            row = active_cell['row']
-            Id=data[row]['Id']
-            #print(Id)
-            #print(dfSpaceReddit[dfSpaceReddit['Id'].eq(Id)]['Text'])
-            return_value = html.Div([html.Button('Retour aux données', id='btnBackLeft', n_clicks=0,style={'float':'right','position':'absolute'}),html.B('Full text : '),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=dfSpaceReddit[dfSpaceReddit['Id'].eq(Id)]['Text'],rows=10,cols=30)]),{'display':'block'},{'display':'none'}
-            goBack=True
-        else :
-            return_value='','',''
-    else:
-        return_value = '',{'display':'none','float':'left','width':'49.5%','height':'100%','left':'100px'},{'display':'block','float':'left','width':'49.5%','height':'100%','left':'100px'}
-        goBack=False
-    print(return_value)
-    return return_value 
-"""
 
 if __name__ == '__main__':
     app.run_server()
