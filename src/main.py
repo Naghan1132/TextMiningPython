@@ -2,12 +2,9 @@ import pickle
 import Corpus
 from importlib import reload
 import numpy as np
-from dash import Dash, dash_table,dcc,Input,callback_context
-import dash_bootstrap_components as dbc
+from dash import Dash, dash_table,dcc
 from dash import html
-import pandas as pd
 from dash.dependencies import Input, Output,State
-import math
 from datetime import datetime
 reload(Corpus)
 
