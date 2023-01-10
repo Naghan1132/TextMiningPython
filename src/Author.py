@@ -28,4 +28,3 @@ class Author:
 
     def __str__(self):
         return "nom de l'auteur est : "+self.name
-

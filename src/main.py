@@ -26,7 +26,6 @@ dfDocs = corpus.get_id2doc_DF()
 dfReddit = dfDocs[dfDocs['Type']=='Reddit']
 dfArxiv = dfDocs[dfDocs['Type']=='Arxiv']
 
-
 componentsStatsVocs = []
 componentsStatsVocs.append(f"Taille du vocabulaire : {len(corpus.vocab)}")
 componentsStatsVocs.append(html.Br())
@@ -98,7 +97,7 @@ app.layout = html.Div([dcc.Dropdown(
                       {'id': 'Auteur', 'name': 'Auteur'},
                       {'id': 'dateFr', 'name': 'Date'},
                       {'id': 'URL', 'name': 'URL'},
-                      {'id': 'Textabrv', 'name': 'Textabrv'},
+                      {'id': 'Textabrv', 'name': 'Texte'},
                   ],style_cell={"width":"5px",'minWidth':'5px','maxWidth':'5px'},style_table={'width':'99.5%'}),html.Div(id='divDetailsLeft',children=[html.Div(id='divWordsLeft')],style={'display':'none','float':'left','width':'50%','height':'100%'})],id="divLeft",style={'z-index':'0','float':'left','width':'50%','height':'45%'}),
     html.Div([html.Br(),html.Center('Corpus "Space" d\'Arxiv',style={'font-size':'30px','font-weight':'bold'}),html.Br(),
               dash_table.DataTable(
@@ -110,7 +109,7 @@ app.layout = html.Div([dcc.Dropdown(
                       {'id': 'Auteur', 'name': 'Auteur' },
                       {'id': 'dateFr', 'name': 'Date'},
                       {'id': 'URL', 'name': 'URL'},
-                      {'id': 'Textabrv', 'name': 'abreviatedText'},
+                      {'id': 'Textabrv', 'name': 'Texte'},
                   ],style_cell={"width":"5px",'minWidth':'5px','maxWidth':'5px'},style_table={'width':'99.5%'}),html.Div(id='divDetailsRight',children=[html.Div(id='divWordsRight')],style={'display':'block','float':'right','width':'50%','height':'100%'})],id="divRight",style={'float':'right','width':'50%','height':'90%',"display":"block"})],style={'z-index':'-1'})])
 @app.callback(
     Output('tableReddit', 'data'),
@@ -210,6 +209,7 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
         #print(Id)
         #print(dfSpaceReddit[dfSpaceReddit['Id'].eq(Id)]['Text'])
         txtDoc = dfReddit[dfReddit['Id'].eq(Id)]['Text']
+        nbComms = dfReddit[dfReddit['Id'].eq(Id)]['Caractéristiques'].values[0]
         if txt:
             score = dfReddit[dfReddit['Id'].eq(Id)]['score'].values[0]
             if score==0.00:
@@ -247,9 +247,9 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
                 tfxidfWords.append(value)
                 tfxidfWords.append(html.Br())
 
-            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsLeft'),html.Br(),html.B('Full text : ',style={'font-size':'25px'}),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(children=tfxidfWords),{'display':'block'}
+            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsLeft'),html.Br(),html.B('Full text : ',style={'font-size':'25px'}),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30),html.Br(),'Nombre de commentaire(s) : '+str(nbComms)])]),html.Div(children=tfxidfWords),{'display':'block'}
         else:
-            return_value = html.Div([html.Center([html.B('Full text : ',style={'font-size':'25px'}),html.Br(),html.Div(id='divWordsLeft'),dcc.Textarea(style={'font-size':'20px'},value=dfReddit[dfReddit['Id'].eq(Id)]['Text'],rows=10,cols=30)])]),html.Div(),{'display':'block','border-right':'solid 0.5px'}
+            return_value = html.Div([html.Center([html.B('Full text : ',style={'font-size':'25px'}),html.Br(),html.Div(id='divWordsLeft'),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30),html.Br(),'Nombre de commentaire(s) : '+str(nbComms)])]),html.Div(),{'display':'block','border-right':'solid 0.5px'}
     return return_value
 
 @app.callback(
@@ -272,6 +272,7 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
             row = active_cell['row']
         Id=data[row]['Id']
         txtDoc = dfArxiv[dfArxiv['Id'].eq(Id)]['Text']
+        coAuteurs = ' - '.join(dfArxiv[dfArxiv['Id'].eq(Id)]['Caractéristiques'].values[0])
         if txt:
             score = dfArxiv[dfArxiv['Id'].eq(Id)]['score'].values[0]
             if score==0.00:
@@ -287,6 +288,7 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
             tfxidfWords = []
             keywords_clean = corpus.nettoyer_texte(txt)
             arr_keywords=keywords_clean.split(" ")
+
 
             tfxidfWords.append(html.B('TFxIDF des mots clés :',style={'font-size':'20px'}))
             tfxidfWords.append(html.Br())
@@ -309,9 +311,9 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
                 tfxidfWords.append(value)
                 tfxidfWords.append(html.Br())
 
-            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsRight'),html.Br(),html.B('Full text : ',style={'font-size':'25px'}),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(children=tfxidfWords),{'display':'block'}
+            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsRight'),html.Br(),html.B('Full text : ',style={'font-size':'25px'}),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30),html.Br(),'Auteur(s) : '+coAuteurs])]),html.Div(children=tfxidfWords),{'display':'block'}
         else:
-            return_value = html.Div([html.Center([html.B('Full text : ',style={'font-size':'25px'}),html.Br(),html.Div(id='divWordsRight'),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(),{'display':'block','border-left':'solid 0.5px'}
+            return_value = html.Div([html.Center([html.B('Full text : ',style={'font-size':'25px'}),html.Br(),html.Div(id='divWordsRight'),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30),html.Br(),'Auteur(s) : '+coAuteurs])]),html.Div(),{'display':'block','border-left':'solid 0.5px'}
     return return_value
 
 @app.callback(

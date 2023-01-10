@@ -6,8 +6,6 @@ import string
 import math
 from numpy import dot
 from numpy.linalg import norm
-from datetime import datetime
-
 
 '''def singleton(Corpus):
     instances = [None]
@@ -126,10 +124,10 @@ class Corpus:
         display(df)
 
     def get_id2doc_DF(self):
-        df = pd.DataFrame(columns=['Id','Nom','Auteur','Date','dateFr','URL','Text','Textabrv','Type'])
+        df = pd.DataFrame(columns=['Id','Nom','Auteur','Date','dateFr','URL','Text','Textabrv','Type','Caractéristiques'])
         i=1
         for doc in self.id2doc.values():
-            row = [i,doc.getTitre(),doc.getAuteur(),doc.getDate().date(),doc.getDate().strftime("%d/%m/%y"),doc.getUrl(),doc.getText(),doc.getText()[:10]+'...',doc.getType()]
+            row = [i,doc.getTitre(),doc.getAuteur(),doc.getDate().date(),doc.getDate().strftime("%d/%m/%y"),doc.getUrl(),doc.getText(),doc.getText()[:10]+'...',doc.getType(),doc.getCaracteristique()]
             df.loc[len(df)] = row
             i+=1
         return df

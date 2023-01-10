@@ -23,8 +23,9 @@ reddit = praw.Reddit(client_id='KL8AdjqIAdRyS3uaswVLCA',client_secret='5vOe4iyO_
 hot_posts = reddit.subreddit('space').hot(limit=1000) # get n first hot posts from the Space subreddit
 
 nb_doc_non_vide = 0
+
 for post in hot_posts:
-    if nb_doc_non_vide == 30:
+    if nb_doc_non_vide == 40:
         break
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
     post.selftext.replace("\r\n", " ")
