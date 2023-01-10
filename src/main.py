@@ -14,8 +14,7 @@ with open("../test_data/id2aut.pkl", "rb") as f:
 
 corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
 corpus.id2doc[1].getDate()
-sizeVocabReddit = len(corpus.getVocabReddit())
-sizeVocabArxiv = len(corpus.getVocabArxiv())
+
 corpus.matrice()
 import pandas as pd
 dfDocs = corpus.get_id2doc_DF()

@@ -30,15 +30,9 @@ class Corpus:
         self.naut = len(authors) #nb autheur
         self.ndoc = len(id2doc) #nb document
         self.chaineUnique = ""
-        self.chaineUniqueReddit = ""
-        self.chaineUniqueArxiv = ""
         self.vocab = {}
-        self.vocabReddit = {}
-        self.vocabArxiv = {}
         self.buildChaineUnique()
-        self.buildVocab("")
-        self.buildVocab("Reddit")
-        self.buildVocab("Arxiv")
+        self.buildVocab()
         self.dfTri = {}
         self.dfTF = pd.DataFrame()
         self.dfTFxIDF = pd.DataFrame()
@@ -97,18 +91,10 @@ class Corpus:
 
     def buildChaineUnique(self):
         liste = []
-        lReddit = []
-        lArxiv = []
         for i in self.id2doc.values():
             txt = i.getText().replace("\n", " ")
-            if i.getType()=='Reddit':
-                lReddit.append(txt)
-            elif i.getType()=='Arxiv':
-                lArxiv.append(txt)
             liste.append(txt)
         self.chaineUnique = " ".join(liste)
-        self.chaineUniqueReddit= " ".join(lReddit)
-        self.chaineUniqueArxiv= " ".join(lArxiv)
 
     def search(self,mot):
         #retourne les passages des documents contenant le mot-clef entré en paramétre
@@ -118,12 +104,6 @@ class Corpus:
             if re.search(mot, i): # si ça match on retourne la phrase
                 passages.append(i)
         return passages
-
-    def getVocabReddit(self):
-        return self.vocabReddit
-
-    def getVocabArxiv(self):
-        return self.vocabArxiv
 
     def concorde(self,mot,tailleContexte):
         passages = {}
@@ -161,35 +141,22 @@ class Corpus:
     def getdfTFxIdf(self):
         return self.dfTFxIDF
 
-    def buildVocab(self,type_):
-        chaine=""
-        if type_=="":
-            chaine = self.nettoyer_texte(self.chaineUnique)
-        if type_=="Reddit":
-            chaine = self.nettoyer_texte(self.chaineUniqueReddit)
-        if type_=="Arxiv":
-            chaine = self.nettoyer_texte(self.chaineUniqueArxiv)
+    def buildVocab(self):
+        chaine = self.nettoyer_texte(self.chaineUnique)
         mots = re.split(r'\s+', chaine) # split la liste avec espaces
         setVoca = sorted(set(mots)) # élimine les doublons et range par ordre alphabétique
-        print("Taille du vocabulaire : ",len(setVoca))
-        print(setVoca)
         vocabulaire = {}
         id = 0
         for valeur in setVoca:
             if valeur != '': #sinon ça mets la chaine vide dans le vocabulaire....
                 vocabulaire[valeur] = {'id':id,'term frequency':0,'document frequency':0} # mettre un id unique en 1ere position ?
                 id += 1
-        if type_=="":
-            self.vocab = vocabulaire
-        if type_=="Reddit":
-            self.vocabReddit = vocabulaire
-        if type_=="Arxiv":
-            self.vocabArxiv = vocabulaire
+        self.vocab = vocabulaire
 
-    def nettoyer_texte(self,chaine): # test avec le tp3 Ingénierie des Données
+    def nettoyer_texte(self,chaine):
         # remove links
         chaine = re.sub(r'https?://\S+|www\S+', '', chaine) # enlève les mots qui contiennent des liens (https,http, www etc...)
-        chaine.split()
+        #chaine.split()
         # tokenize
         tokens = word_tokenize(chaine)
         #convert in lower case
@@ -208,19 +175,9 @@ class Corpus:
         cleaned_doc = ' '.join(word for word in words) # pour faire un paragraphe entier (concatene les mots)
         return cleaned_doc
 
-    def stats(self,type_,n): # OK
-        trie=[]
-        if type_=="":
-            print("Nombre de mots différents dans le corpus : ",len(self.vocab))
-            trie = sorted(self.vocab.items(), key=lambda x: x[1]['term frequency'], reverse=True)
-        if type_=="Reddit":
-            print("Nombre de mots différents dans le corpus : ",len(self.vocabReddit))
-            trie = sorted(self.vocabArxiv.items(), key=lambda x: x[1]['term frequency'], reverse=True)
-        if type_=="Arxiv":
-            print("Nombre de mots différents dans le corpus : ",len(self.vocabArxiv))
-            trie = sorted(self.vocabArxiv.items(), key=lambda x: x[1]['term frequency'], reverse=True)
-
-        i = 0
+    def stats(self,n): # OK
+        print("Nombre de mots différents dans le corpus : ",len(self.vocab))
+        trie = sorted(self.vocab.items(), key=lambda x: x[1]['term frequency'], reverse=True)
         for i in range(n):
             valeur = trie[i]
             print(f"{i + 1}ème position : {valeur[0]} = {valeur[1]['term frequency']} term frequency")
@@ -244,8 +201,7 @@ class Corpus:
             splitedWords = re.split('\s+', chaineCleaned) # split la liste avec espaces
 
             deja_vu = []
-            deja_vu_Reddit = []
-            deja_vu_Arxiv = []
+
             for word in self.vocab.keys(): # initialisation
                 mat_tf[doc.getTitre()][word] = 0
 
@@ -258,20 +214,6 @@ class Corpus:
                         mat_tf[doc.getTitre()][word] = nbOccurence
                         deja_vu.append(word)
                         self.vocab[word]['document frequency'] += 1
-                if word in self.vocabReddit.keys(): # il est dans le vocabulaire
-                    self.vocabReddit[word]['term frequency'] += 1
-                    if word not in deja_vu_Reddit: # première fois que l'on tombe dessus dans le document
-                        nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        mat_tf[doc.getTitre()][word] = nbOccurence
-                        deja_vu_Reddit.append(word)
-                        self.vocabReddit[word]['document frequency'] += 1
-                if word in self.vocabArxiv.keys(): # il est dans le vocabulaire
-                    self.vocabArxiv[word]['term frequency'] += 1
-                    if word not in deja_vu_Arxiv: # première fois que l'on tombe dessus dans le document
-                        nbOccurence = splitedWords.count(word) # on compte directement tout les mêmes mots d'un texte
-                        mat_tf[doc.getTitre()][word] = nbOccurence
-                        deja_vu_Arxiv.append(word)
-                        self.vocabArxiv[word]['document frequency'] += 1
 
         # ==== TF_IDF === :
         # dictionnaire qui contiendra les mots de chaque document et leur fréquence
@@ -317,16 +259,10 @@ class Corpus:
             for word in splitedWords:
                 tf = tf_scores[word]['doc_count'] / len(splitedWords)
                 idf = idf_scores[word]
-                #doc_tfidf.append(tf * idf)
                 dictTFxIDF[doc.getTitre()][word] = tf * idf
-            #mat_TFxIDF.append(doc_tfidf)
-
-        #print(mat_TFxIDF) # liste de listes qui contient les scores TF-IDF de chaque mot dans chaque document
-        #print(mat_TFxIDF[0]) # => les scores TF-IDF de chaque mot (du document) pour le premier document
 
         dfTF = pd.DataFrame(mat_tf) # OK
         dfTFxIDF = pd.DataFrame(dictTFxIDF) # OK
-
 
         self.dfTF = dfTF
         self.dfTFxIDF =dfTFxIDF
@@ -364,7 +300,7 @@ class Corpus:
             if norm(vectorMotCles) * norm(vector) == 0:
                 cosine_similarity = 0.0
             else:
-                cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector)) # OK
+                cosine_similarity = dot(vectorMotCles, vector) / (norm(vectorMotCles) * norm(vector))
             res[title] = cosine_similarity
 
         print("--------------------------------------")
