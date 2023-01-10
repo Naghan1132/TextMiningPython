@@ -2,7 +2,13 @@ import pickle
 import Corpus
 from importlib import reload
 import numpy as np
-
+from dash import Dash, dash_table,dcc,Input,callback_context
+import dash_bootstrap_components as dbc
+from dash import html
+import pandas as pd
+from dash.dependencies import Input, Output,State
+import math
+from datetime import datetime
 reload(Corpus)
 
 # Ouverture du fichier, puis lecture avec pickle
@@ -14,24 +20,16 @@ with open("../test_data/id2aut.pkl", "rb") as f:
     id2aut = pickle.load(f)
 
 corpus = Corpus.Corpus("Space",id2aut,id2doc)
-corpus.id2doc[1].getDate()
 
 n_docs = len(corpus.id2doc)
 
 corpus.matrice()
-import pandas as pd
 dfDocs = corpus.get_id2doc_DF()
 
 dfReddit = dfDocs[dfDocs['Type']=='Reddit']
 dfArxiv = dfDocs[dfDocs['Type']=='Arxiv']
 
-from dash import Dash, dash_table,dcc,Input,callback_context
-import dash_bootstrap_components as dbc
-from dash import html
-import pandas as pd
-from dash.dependencies import Input, Output,State
-import math
-from datetime import datetime
+
 componentsStatsVocs = []
 componentsStatsVocs.append(f"Taille du vocabulaire : {len(corpus.vocab)}")
 componentsStatsVocs.append(html.Br())
