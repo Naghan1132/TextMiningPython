@@ -30,18 +30,19 @@ from dash import html
 import pandas as pd
 from dash.dependencies import Input, Output,State
 import math
-import datetime
-
+from datetime import datetime
 componentsStatsVocs = []
 componentsStatsVocs.append(f"Taille du vocabulaire : {len(corpus.vocab)}")
 componentsStatsVocs.append(html.Br())
 componentsStatsVocs.append(html.Br())
 componentsStatsVocs.append(html.Br())
 
-componentsStatsVocs.append("Top 20 des mots ayant les plus grands tfxidf du vocabulaire")
+componentsStatsVocs.append("Les 20 plus grandes sommes TFxIDF")
 componentsStatsVocs.append(html.Br())
 componentsStatsVocs.append(html.Br())
 dictVoctfxIdf={}
+
+
 for index, row in corpus.getdfTFxIdf().iterrows():
     dictVoctfxIdf[index]=row.sum()
 
@@ -54,13 +55,12 @@ for key, value in list(sorted(dictVoctfxIdf.items(),key=lambda x: x[1],reverse=T
 
 '''dfReddit['score'] = dfReddit['Nom'].apply(lambda x:dictest[x])
 dfReddit = dfReddit.sort_values('score',ascending=False)
-
 dfArxiv['score'] = dfArxiv['Nom'].apply(lambda x:dictest[x])
 dfArxiv = dfArxiv.sort_values('score',ascending=False)'''
 listeAuteurReddit = dfReddit['Auteur'].unique()
 listeAuteurArxiv = dfArxiv['Auteur'].unique()
 
-
+print(datetime.strptime(str(min(dfDocs['Date'])),"%Y-%m-%d"))
 app = Dash(__name__)
 from dash import html
 
@@ -87,7 +87,7 @@ app.layout = html.Div([dcc.Dropdown(
                 html.Button('Effacer les filtres', id='btnClear', n_clicks=None,style={'float':'right'})],style={'float':'right','width':'30%'}),
             html.Center([
                 dcc.DatePickerRange(
-                    month_format='DD/MM/YYYY',
+                    display_format='DD/MM/YYYY',
                     end_date_placeholder_text='DD/MM/YYYY',
                     start_date=min(dfDocs['Date']),
                     end_date=max(dfDocs['Date']),
@@ -105,7 +105,7 @@ app.layout = html.Div([dcc.Dropdown(
                       {'id': 'Id', 'name': 'ID'},
                       {'id': 'Nom', 'name': 'Titre'},
                       {'id': 'Auteur', 'name': 'Auteur'},
-                      {'id': 'Date', 'name': 'Date'},
+                      {'id': 'dateFr', 'name': 'Date'},
                       {'id': 'URL', 'name': 'URL'},
                       {'id': 'Textabrv', 'name': 'Textabrv'},
                   ],style_cell={"width":"5px",'minWidth':'5px','maxWidth':'5px'},style_table={'width':'99.5%'}),html.Div(id='divDetailsLeft',children=[html.Div(id='divWordsLeft')],style={'display':'none','float':'left','width':'50%','height':'100%'})],id="divLeft",style={'z-index':'0','float':'left','width':'50%','height':'45%'}),
@@ -117,7 +117,7 @@ app.layout = html.Div([dcc.Dropdown(
                       {'id': 'Id', 'name': 'ID'},
                       {'id': 'Nom', 'name': 'Titre'},
                       {'id': 'Auteur', 'name': 'Auteur' },
-                      {'id': 'Date', 'name': 'Date'},
+                      {'id': 'dateFr', 'name': 'Date'},
                       {'id': 'URL', 'name': 'URL'},
                       {'id': 'Textabrv', 'name': 'abreviatedText'},
                   ],style_cell={"width":"5px",'minWidth':'5px','maxWidth':'5px'},style_table={'width':'99.5%'}),html.Div(id='divDetailsRight',children=[html.Div(id='divWordsRight')],style={'display':'block','float':'right','width':'50%','height':'100%'})],id="divRight",style={'float':'right','width':'50%','height':'90%',"display":"block"})],style={'z-index':'-1'})])
@@ -127,32 +127,36 @@ app.layout = html.Div([dcc.Dropdown(
     State('cbAuteurLeft', 'value'),
     State('cbAuteurRight', 'value'),
     State('txtSearch', 'value'),
-    #    State('dateFilter', 'start_date'),
-    #    State('dateFilter', 'end_date'),
+    State('dateFilter', 'start_date'),
+    State('dateFilter', 'end_date'),
     Input('btnFilter', 'n_clicks'),
 )
-def callback_func(cbAuteur_value_left,cbAuteur_value_right,keywords,clicks):
+def callback_func(cbAuteur_value_left,cbAuteur_value_right,keywords,start,end,clicks):
     df_filtered_1 = dfReddit.copy()
     df_filtered_2 = dfArxiv.copy()
 
     start_val = ''
     end_val=''
+
+    print(start)
+    print(end)
+
     if cbAuteur_value_left:
         df_filtered_1 = df_filtered_1[df_filtered_1['Auteur'].eq(cbAuteur_value_left)]
     if cbAuteur_value_right:
         df_filtered_2 = df_filtered_2[df_filtered_2['Auteur'].eq(cbAuteur_value_right)]
 
-    #    if not(start):
-    #        start_val=datetime.date(min(dfDocs['Date']))
-    #    else:
-    #        start_val=start_val.split("T")[0]
-    #    if not(end):
-    #        end_val=datetime.date(min(dfDocs['Date']))
-    #    else:
-    #        end_val=end_val.split("T")[0]
+    if not(start):
+        start_val=datetime.date(min(dfDocs['Date']))
+    else:
+        start_val=datetime.strptime(start, "%Y-%m-%d").date()
+    if not(end):
+        end_val=datetime.date(min(dfDocs['Date']))
+    else:
+        end_val=datetime.strptime(end, "%Y-%m-%d").date()
 
-    #    df_filtered_1=df_filtered_1[(df_filtered_1['Date'] >=start_val) & (df_filtered_1['Date']<=start_val)]
-    #    df_filtered_2=df_filtered_2[(df_filtered_2['Date'] >=end_val) & (df_filtered_2['Date']<=end_val)]
+    df_filtered_1=df_filtered_1[(df_filtered_1['Date'] >=start_val) & (df_filtered_1['Date']<=end_val)]
+    df_filtered_2=df_filtered_2[(df_filtered_2['Date'] >=start_val) & (df_filtered_2['Date']<=end_val)]
 
     if keywords:
         print('---------------------',keywords)
@@ -171,8 +175,8 @@ def callback_func(cbAuteur_value_left,cbAuteur_value_right,keywords,clicks):
         if cbAuteur_value_right:
             df_filtered_2 = df_filtered_2[df_filtered_2['Auteur'].eq(cbAuteur_value_right)]
 
-        #        df_filtered_1=df_filtered_1[(df_filtered_1['Date'] >=start_val) & (df_filtered_1['Date']<=start_val)]
-    #        df_filtered_2=df_filtered_2[(df_filtered_2['Date'] >=end_val) & (df_filtered_2['Date']<=end_val)]
+    df_filtered_1=df_filtered_1[(df_filtered_1['Date'] >=start_val) & (df_filtered_1['Date']<=end_val)]
+    df_filtered_2=df_filtered_2[(df_filtered_2['Date'] >=start_val) & (df_filtered_2['Date']<=end_val)]
 
     return df_filtered_1.to_dict(orient='records'),df_filtered_2.to_dict(orient='records')
 
@@ -181,16 +185,18 @@ def callback_func(cbAuteur_value_left,cbAuteur_value_right,keywords,clicks):
     Output('cbAuteurLeft', 'value'),
     Output('cbAuteurRight', 'value'),
     Output('txtSearch', 'value'),
+    Output('dateFilter', 'start_date'),
+    Output('dateFilter', 'end_date'),
     [State('cbAuteurLeft', 'value'),
      State('cbAuteurRight', 'value'),
      State('txtSearch', 'value')],
+    State('dateFilter', 'start_date'),
+    State('dateFilter', 'end_date'),
     [Input('btnClear', 'n_clicks')]
 )
-def callback_func_2(cbAuteurLeft,cbAuteurRight,txtSearch,clicks):
-    df_filtered_1 = dfReddit.copy()
-    df_filtered_2 = dfArxiv.copy()
-    if cbAuteurLeft or cbAuteurRight or txtSearch:
-        return '','',''
+def callback_func_2(cbAuteurLeft,cbAuteurRight,txtSearch,start,end,clicks):
+    if cbAuteurLeft or cbAuteurRight or txtSearch or datetime.strptime(start, "%Y-%m-%d").date()!=min(dfDocs['Date']) or datetime.strptime(end, "%Y-%m-%d").date()!=max(dfDocs['Date']):
+        return '','','',min(dfDocs['Date']),max(dfDocs['Date'])
 
 @app.callback(
     [Output("divDetailsLeft", "children"),
@@ -229,7 +235,7 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
             keywords_clean = corpus.nettoyer_texte(txt)
             arr_keywords=keywords_clean.split(" ")
 
-            tfxidfWords.append(html.B('TfxIdf des mots clés :',style={'font-size':'20px'}))
+            tfxidfWords.append(html.B('TFxIDF des mots clés :',style={'font-size':'20px'}))
             tfxidfWords.append(html.Br())
             for word in arr_keywords:
                 if word in dfTFxIdfdup.index:
@@ -291,7 +297,7 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
             keywords_clean = corpus.nettoyer_texte(txt)
             arr_keywords=keywords_clean.split(" ")
 
-            tfxidfWords.append(html.B('tfxidf des mots clés :'))
+            tfxidfWords.append(html.B('TFxIDF des mots clés :',style={'font-size':'20px'}))
             tfxidfWords.append(html.Br())
             for word in arr_keywords:
                 if word in dfTFxIdfdup.index:
@@ -305,29 +311,28 @@ def callback_func_3(active_cell,data,txt,page_curr,page_size):
                     else:
                         colorTfxIdf='rgb(47,221,63)'
 
-                    value = html.Label(children =[word + ' : ',tfxidf],style={'margin-left':'20px','background-color':colorTfxIdf})
+                    value = html.Label(children =[word + ' : ',tfxidf],style={'margin-left':'20px','background-color':colorTfxIdf,'font-size':'20px'})
                 else:
-                    value = html.Label(children =[word + ' : ',0.0],style={'margin-left':'20px','background-color':'rgb(220,220,220)'})
+                    value = html.Label(children =[word + ' : ',0.0],style={'margin-left':'20px','background-color':'rgb(220,220,220)','font-size':'20px'})
 
                 tfxidfWords.append(value)
                 tfxidfWords.append(html.Br())
 
-            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsRight'),html.Br(),html.B('Full text : '),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(children=tfxidfWords),{'display':'block'}
+            return_value = html.Div([html.Center([html.Br(),html.B('Score : ',style={'font-size':'25px'}),html.Label(children=[score],style={'background-color':color,'font-size':'20px'}),html.Br(),html.Div(id='divWordsRight'),html.Br(),html.B('Full text : ',style={'font-size':'25px'}),html.Br(),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(children=tfxidfWords),{'display':'block'}
         else:
             return_value = html.Div([html.Center([html.B('Full text : ',style={'font-size':'25px'}),html.Br(),html.Div(id='divWordsRight'),dcc.Textarea(style={'font-size':'20px'},value=txtDoc,rows=10,cols=30)])]),html.Div(),{'display':'block','border-left':'solid 0.5px'}
     return return_value
 
 @app.callback(
     Output(component_id='divInfos', component_property='style'),
-    [Input(component_id='cbMenu', component_property='value')])
+    [Input(component_id='cbMenu', component_property='value')]
+)
 
 def callback_func_4(visibility_state):
     if visibility_state == 'infoGen':
         return {'z-index':'1','display': 'block','width':'100%','height':'100%','position':'absolute','background-color':'white'}
     if visibility_state == 'Details':
         return {'z-index':'1','display': 'none','width':'100%','height':'100%','position':'absolute','background-color':'white'}
-
-
 """
 @app.callback(
     [Output("divDetailsLeft", "children"),
@@ -337,7 +342,6 @@ def callback_func_4(visibility_state):
      Input('btnBackLeft', 'n_clicks')],
     State('tableReddit', 'data')
 )
-
 def callback_func_3(active_cell,clicks,data):  
     return_value=()
     global goBack

@@ -23,15 +23,13 @@ reddit = praw.Reddit(client_id='KL8AdjqIAdRyS3uaswVLCA',client_secret='5vOe4iyO_
 hot_posts = reddit.subreddit('space').hot(limit=1000) # get n first hot posts from the Space subreddit
 
 nb_doc_non_vide = 0
-
 for post in hot_posts:
-    if nb_doc_non_vide == 40:
+    if nb_doc_non_vide == 30:
         break
     dateTime = datetime.datetime.utcfromtimestamp(post.created)
     post.selftext.replace("\r\n", " ")
-    if post.selftext != "":
+    if len(post.selftext.strip()) > 60 and post.author != None:
         nb_doc_non_vide += 1
-        print(nb_doc_non_vide)
         document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
         id2doc[indice] = document
