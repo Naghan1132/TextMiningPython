@@ -15,6 +15,8 @@ with open("../test_data/id2aut.pkl", "rb") as f:
 corpus = src.Corpus.Corpus("Space",id2aut,id2doc)
 corpus.id2doc[1].getDate()
 
+n_docs = len(corpus.id2doc)
+
 corpus.matrice()
 import pandas as pd
 dfDocs = corpus.get_id2doc_DF()
@@ -71,7 +73,7 @@ app.layout = html.Div([dcc.Dropdown(
         {'label': 'Détails des corpus par Document', 'value': 'Details'}
     ],
     value = 'infoGen'
-),html.Div(id="divInfos",children=[html.Center([html.H1('Informations générales'),html.Label("Cette application dispose d'un moteur de recherche permettant de comparer différentes statistiques de pertinence en fonction"),html.Br(),html.Label("de mot clés tapés dans une barre de recherche (utilisez la liste déroulante du dessus afin de changer de menu)"),html.Br(),html.Label("les corpus sont les suivants :")]),html.Br(),html.Br(),html.Div([html.Center([html.H2('Corpus "Space" Reddit'),html.Label("Ce corpus de document contient les 10 premiers documents",style={'font-size':'20px'}),html.Br(),html.Label("en recherchant le mot clé \"Space\" sur Reddit",style={'font-size':'20px'})])],style={'float':'left','width':'49.5%','height':'20%','border-right': 'solid 0.5px'}),html.Div([html.Center([html.H2('Corpus "Space" Arxiv'),html.Label("Ce corpus de document contient les 10 premiers documents",style={'font-size':'20px'}),html.Br(),html.Label("en recherchant le mot clé \"Space\" sur Arxiv",style={'font-size':'20px'})],style={'float':'right','width':'49.5%','height':'20%','position':'relative'})]),html.Div([html.Center([html.H2("Statistiques générales"),html.Div(id="divStats",children=componentsStatsVocs)])],style={'position':'absolute','width':'100%','height':'80%','top':'45%'})],style={'z-index':'1','width':'100%','height':'20%','position':'absolute','background-color':'white'}),html.Div(id='mainDocDetails',children=[
+),html.Div(id="divInfos",children=[html.Center([html.H1('Informations générales'),html.Label("Cette application dispose d'un moteur de recherche permettant de comparer différentes statistiques de pertinence en fonction"),html.Br(),html.Label("de mot clés tapés dans une barre de recherche (utilisez la liste déroulante du dessus afin de changer de menu)"),html.Br(),html.Label("les corpus sont les suivants :")]),html.Br(),html.Br(),html.Div([html.Center([html.H2('Corpus "Space" Reddit'),html.Label("Ce corpus de document contient les "+ str(int(n_docs/2)) +" premiers documents",style={'font-size':'20px'}),html.Br(),html.Label("en recherchant le mot clé \"Space\" sur Reddit",style={'font-size':'20px'})])],style={'float':'left','width':'49.5%','height':'20%','border-right': 'solid 0.5px'}),html.Div([html.Center([html.H2('Corpus "Space" Arxiv'),html.Label("Ce corpus de document contient les "+ str(int(n_docs/2)) +" premiers documents",style={'font-size':'20px'}),html.Br(),html.Label("en recherchant le mot clé \"Space\" sur Arxiv",style={'font-size':'20px'})],style={'float':'right','width':'49.5%','height':'20%','position':'relative'})]),html.Div([html.Center([html.H2("Statistiques générales"),html.Div(id="divStats",children=componentsStatsVocs)])],style={'position':'absolute','width':'100%','height':'80%','top':'45%'})],style={'z-index':'1','width':'100%','height':'20%','position':'absolute','background-color':'white'}),html.Div(id='mainDocDetails',children=[
     html.Div([
         dcc.Input(id='txtSearch',type='text',placeholder='Saisir les mots clés...',style={'margin':'0 auto','display':'block','margin-bottom':'5px'}),
         html.Div([
