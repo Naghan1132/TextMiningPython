@@ -1,6 +1,7 @@
 import pickle
 import Corpus
 from importlib import reload
+import numpy as np
 
 reload(Corpus)
 
@@ -52,13 +53,8 @@ for key, value in list(sorted(dictVoctfxIdf.items(),key=lambda x: x[1],reverse=T
     componentsStatsVocs.append(lab)
     componentsStatsVocs.append(html.Br())
 
-
-'''dfReddit['score'] = dfReddit['Nom'].apply(lambda x:dictest[x])
-dfReddit = dfReddit.sort_values('score',ascending=False)
-dfArxiv['score'] = dfArxiv['Nom'].apply(lambda x:dictest[x])
-dfArxiv = dfArxiv.sort_values('score',ascending=False)'''
-listeAuteurReddit = dfReddit['Auteur'].unique()
-listeAuteurArxiv = dfArxiv['Auteur'].unique()
+listeAuteurReddit = np.sort(dfReddit['Auteur'].unique())
+listeAuteurArxiv = np.sort(dfArxiv['Auteur'].unique())
 
 print(datetime.strptime(str(min(dfDocs['Date'])),"%Y-%m-%d"))
 app = Dash(__name__)
