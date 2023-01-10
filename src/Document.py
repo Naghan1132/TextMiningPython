@@ -66,7 +66,7 @@ class ArxivDocument(Document): #Document = Classe mère
         # constructeur de Document ou Document.__init(self,...,...,...)
         super().__init__(titre,auteur,url, texte,date)
         #Document.__init__(self,...)
-        #self.listeAuteur = auteur # nouvelle variable propre à Arxiv
+        self.listeAuteur = auteur # nouvelle variable propre à Arxiv
 
     def getCaracteristique(self):
         return self.listeAuteur
