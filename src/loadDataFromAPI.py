@@ -3,13 +3,13 @@ import urllib.request
 import praw
 import xmltodict
 from importlib import reload
-import src.Corpus
-import src.Author
-import src.DocumentGenerator
+import Corpus
+import Author
+import DocumentGenerator
 
-reload(src.Author)
-reload(src.Corpus)
-reload(src.DocumentGenerator)
+reload(Author)
+reload(Corpus)
+reload(DocumentGenerator)
 
 # =============== INITIALISATION VARIABLES ===============
 
@@ -30,7 +30,7 @@ for post in hot_posts:
     post.selftext.replace("\r\n", " ")
     if len(post.selftext.strip()) > 60 and post.author != None:
         nb_doc_non_vide += 1
-        document = src.DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
+        document = DocumentGenerator.DocumentGenerator.factory("Reddit",post.title,post.author.name,post.url,post.selftext,dateTime)
 
         id2doc[indice] = document
         indice += 1
@@ -48,7 +48,7 @@ for post in hot_posts:
             authorInId2aut.add(document)
         else:
             production = {}
-            auteur = src.Author.Author(post.author.name,0,production)
+            auteur = Author.Author(post.author.name,0,production)
             auteur.add(document)
             id2aut[post.author.name] = auteur
 
@@ -72,7 +72,7 @@ for values in dic['feed']['entry']:
         # juste dico {}
         for a in nomAuteur.values():
             # Un seul auteur
-            document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,dateModified)
+            document = DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),a,url,resumer,dateModified)
             listeA = []
             listeA.append(a)
             document.setListeAutheurs(listeA)
@@ -83,7 +83,7 @@ for values in dic['feed']['entry']:
                 authorInId2aut.add(document)
             else:
                 production = {}
-                auteur = src.Author.Author(a,0,production)
+                auteur = Author.Author(a,0,production)
                 auteur.add(document)
                 id2aut[a] = auteur
     else:
@@ -94,7 +94,7 @@ for values in dic['feed']['entry']:
                 listeAuteur.append(valeurNom)
                 # plusieurs autheurs alors on ajoute plusieurs fois le doc
         # Mettre le premier auteur dans l'auteur de base => puis on rajoute
-        document = src.DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,dateModified) #tp5
+        document = DocumentGenerator.DocumentGenerator.factory("Arxiv",values.get('title'),listeAuteur[0],url,resumer,dateModified) #tp5
         document.setListeAutheurs(listeAuteur)
         id2doc[indice] = document
         indice += 1
@@ -104,7 +104,7 @@ for values in dic['feed']['entry']:
                 authorInId2aut.add(document)
             else:
                 production = {}
-                auteur = src.Author.Author(nomAuteur,0,production)
+                auteur = Author.Author(nomAuteur,0,production)
                 auteur.add(document)
                 id2aut[nomAuteur] = auteur
 

@@ -1,8 +1,8 @@
 import pickle
-import src.Corpus
+import Corpus
 from importlib import reload
 
-reload(src.Corpus)
+reload(Corpus)
 
 # Ouverture du fichier, puis lecture avec pickle
 with open("../test_data/id2doc.pkl", "rb") as f:

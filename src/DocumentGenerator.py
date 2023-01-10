@@ -1,4 +1,4 @@
-from src.Document import *
+from Document import *
 
 class DocumentGenerator: # Générateur de Documents
     @staticmethod
