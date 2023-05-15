@@ -7,3 +7,6 @@ Lancez le main.py, ou bien le loadDataFromAPI.py si vous voulez télécharger de
 Allez à  l'adresse http://127.0.0.1:8050/  
 Analysez vos documents
 
+
+
+![Interface](https://i.imgur.com/IvkWupE.png)
